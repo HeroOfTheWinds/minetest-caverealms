@@ -1,4 +1,4 @@
--- caverealms 0.1.0 by HeroOfTheWinds
+-- caverealms 0.1.1 by HeroOfTheWinds
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- License: code WTFPL
@@ -22,11 +22,11 @@ local DIRTHR = 0.04 -- Dirt density threshold
 local STOTHR = 0.08 -- Stone density threshold
 local STABLE = 2 -- Minimum number of stacked stone nodes in column for dirt / sand on top
 
-local STALAG = 0.02 --chance of stalagmites
+local STAGCHA = 0.002 --chance of stalagmites
 local STALAC = 0.04 --chance of stalactites
 local H_LAG = 15 --max height for stalagmites
 local H_LAC = 20 --...stalactites
-local CRYSTAL = 0.01 --chance of glow crystal formations
+local CRYSTAL = 0.007 --chance of glow crystal formations
 local H_CRY = 6 --max height of glow crystals
 local GEMCHA = 0.03 --chance of small glow gems
 
@@ -76,7 +76,7 @@ minetest.register_node("caverealms:glow_crystal", {
 	tiles = {"caverealms_glow_crystal.png"},
 	is_ground_content = true,
 	groups = {cracky=3},
-	--sounds = "default_break_glass.1.ogg", --broken
+	sounds = default.node_sound_glass_defaults(),
 	light_source = 13,
 	paramtype = "light",
 	use_texture_alpha = true,
@@ -90,11 +90,9 @@ minetest.register_node("caverealms:glow_ore", {
 	tiles = {"caverealms_glow_ore.png"},
 	is_ground_content = true,
 	groups = {cracky=2},
-	--sounds = "default_break_glass.1.ogg", --broken
+	sounds = default.node_sound_glass_defaults(),
 	light_source = 10,
 	paramtype = "light",
-	--use_texture_alpha = true,
-	--drawtype = "allfaces_optional",
 })
 
 --glowing crystal
@@ -105,7 +103,7 @@ minetest.register_node("caverealms:glow_gem", {
 	wield_image = "caverealms_glow_gem.png",
 	is_ground_content = true,
 	groups = {cracky=3, oddly_breakable_by_hand=1},
-	--sounds = "default_break_glass.1.ogg", --broken
+	sounds = default.node_sound_glass_defaults(),
 	light_source = 11,
 	paramtype = "light",
 	drawtype = "plantlike",
@@ -117,10 +115,10 @@ minetest.register_node("caverealms:glow_gem", {
 		fixed = {-0.5, -0.5, -0.5, 0.5, -5/16, 0.5},
 	},
 })
---cave dirt_with_grass - bluish?
-minetest.register_node("caverealms:dirt_with_grass", {
+--cave mossy cobble - bluish?
+minetest.register_node("caverealms:stone_with_moss", {
 	description = "Cave Dirt with Grass",
-	tiles = {"caverealms_grass.png", "default_dirt.png", "default_dirt.png^caverealms_grass_side.png"},
+	tiles = {"default_cobble.png^caverealms_moss.png", "default_cobble.png", "default_cobble.png^caverealms_moss_side.png"},
 	is_ground_content = true,
 	groups = {crumbly=3,soil=1},
 	drop = 'default:dirt',
@@ -129,6 +127,39 @@ minetest.register_node("caverealms:dirt_with_grass", {
 	}),
 })
 --cave plants
+
+--stalagmite spawner
+function caverealms:stalagmite(x,y,z, area, data)
+	--contest ids
+	local c_stone = minetest.get_content_id("default:stone")
+	
+	local top = math.random(6,H_LAG) --grab a random height for the stalagmite
+	for j = 0, top do --y
+		for k = -3, 3 do
+			for l = -3, 3 do
+				if j == 0 then
+					if k*k + l*l <= 9 then
+						local vi = area:index(x+k, y+j, z+l-3)
+						data[vi] = c_stone
+					end
+				elseif j <= top/5 then
+					if k*k + l*l <= 4 then
+						local vi = area:index(x+k, y+j, z+l-3)
+						data[vi] = c_stone
+					end
+				elseif j <= top/5 * 3 then
+					if k*k + l*l <= 1 then
+						local vi = area:index(x+k, y+j, z+l-3)
+						data[vi] = c_stone
+					end
+				else
+					local vi = area:index(x, y+j, z-3)
+					data[vi] = c_stone
+				end
+			end
+		end
+	end
+end
 
 --glowing crystal stalagmite spawner
 function caverealms:crystal_stalagmite(x, y, z, area, data)
@@ -141,7 +172,7 @@ function caverealms:crystal_stalagmite(x, y, z, area, data)
 			for l = -2, 2 do --z
 				if j <= math.ceil(H_CRY / 4) then --base
 					if k*k + l*l <= 4 then --make a circle
-						local vi = area:index(x+k, y+j, z+l)
+						local vi = area:index(x+k, y+j, z+l-2)
 						if math.random(3) == 1 then
 							data[vi] = c_crystal
 						else
@@ -152,14 +183,14 @@ function caverealms:crystal_stalagmite(x, y, z, area, data)
 					if k >= -1 and k <= 1 then
 					if l >= -1 and l <= 1 then 
 						if j <= H_CRY - 2 then
-							local vi = area:index(x+k, y+j, z+l)
+							local vi = area:index(x+k, y+j, z+l-2)
 							if math.random(3) <= 2 then
 								data[vi] = c_crystal
 							else
 								data[vi] = c_crystore
 							end
 						else
-							local vi = area:index(x, y+j, z)
+							local vi = area:index(x, y+j, z-2)
 							data[vi] = c_crystal
 						end
 					end
@@ -207,10 +238,10 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_air = minetest.get_content_id("air")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
 	local c_gem = minetest.get_content_id("caverealms:glow_gem")
-	local c_grass = minetest.get_content_id("caverealms:dirt_with_grass")
+	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
 	
 	--some mandatory values
-	local sidelen = x1 - x0 + 1 --usually equals 80
+	local sidelen = x1 - x0 + 1 --usually equals 80 with default mapgen values. Always a multiple of 16.
 	local chulens = {x=sidelen, y=sidelen, z=sidelen} --position table to pass to get3dMap_flat
 	local minposxyz = {x=x0, y=y0, z=z0}
 	local minposxz = {x=x0, y=z0}
@@ -256,18 +287,22 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				local density = nvals_cave[nixyz] - grad --how dense is the emptiness?
 				if density < 0 and density > -0.7 then -- if cavern "shell"
 					data[vi] = c_air --make emptiness
-					if y < cavemid and density < STOTHR and stable[si] <= STABLE then
+					if density < STOTHR and stable[si] <= STABLE then
 						dirt[si] = dirt[si] + 1
 					else
 						stable[si] = stable[si] + 1
 					end
 					
-				elseif y < cavemid and dirt[si] >= 1 then -- node above surface
+				elseif dirt[si] >= 1 then -- node above surface
 					--place dirt on floor, add plants
-					data[vi] = c_grass
+					data[vi] = c_moss
 					--on random chance, place glow crystal formations
 					if math.random() <= CRYSTAL then
 						caverealms:crystal_stalagmite(x, y, z, area, data)
+					end
+					--randomly place stalagmites
+					if math.random() <= STAGCHA then
+						caverealms:stalagmite(x, y, z, area, data)
 					end
 					--randomly place glow gems
 					if math.random() < GEMCHA then
@@ -282,9 +317,9 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				nixz = nixz + 1 --increment the 2D index
 				vi = vi + 1 --increment the area index
 			end
-			nixz = nixz - 80 --shift the 2D index down a layer
+			nixz = nixz - sidelen --shift the 2D index down a layer
 		end
-		nixz = nixz + 80 --shift the 2D index up a layer
+		nixz = nixz + sidelen --shift the 2D index up a layer
 	end
 	
 	--write these changes to the world
