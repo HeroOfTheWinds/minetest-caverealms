@@ -3,10 +3,16 @@
 -- Depends default
 -- License: code WTFPL
 
--- Parameters
+caverealms = {}
 
-local YMIN = -33000 -- Approximate realm limits.
-local YMAX = -700
+local modpath = minetest.get_modpath(minetest.get_current_modname())
+
+dofile(modpath.."/config.lua")
+
+-- Parameters (see also config.lua)
+
+local YMIN = caverealms.config.ymin -- Approximate realm limits.
+local YMAX = caverealms.config.ymax
 local XMIN = -33000
 local XMAX = 33000
 local ZMIN = -33000
@@ -64,10 +70,6 @@ local np_wave = {
 	persist = 0.5
 }
 
--- Stuff
-
-caverealms = {}
-
 -- Nodes
 
 --glowing crystal
@@ -117,11 +119,11 @@ minetest.register_node("caverealms:glow_gem", {
 })
 --cave mossy cobble - bluish?
 minetest.register_node("caverealms:stone_with_moss", {
-	description = "Cave Dirt with Grass",
+	description = "Cave Stone with Moss",
 	tiles = {"default_cobble.png^caverealms_moss.png", "default_cobble.png", "default_cobble.png^caverealms_moss_side.png"},
 	is_ground_content = true,
 	groups = {crumbly=3},
-	drop = 'default:dirt',
+	drop = 'default:cobblestone',
 	sounds = default.node_sound_dirt_defaults({
 		footstep = {name="default_grass_footstep", gain=0.25},
 	}),
@@ -136,7 +138,7 @@ minetest.register_node("caverealms:stone_with_moss", {
 function caverealms:stalagmite(x,y,z, area, data)
 	--contest ids
 	local c_stone = minetest.get_content_id("default:stone")
-	
+
 	local top = math.random(6,H_LAG) --grab a random height for the stalagmite
 	for j = 0, top do --y
 		for k = -3, 3 do
@@ -169,7 +171,7 @@ end
 function caverealms:stalactite(x,y,z, area, data)
 	--contest ids
 	local c_stone = minetest.get_content_id("default:stone")--("caverealms:limestone")
-	
+
 	local bot = math.random(-H_LAC, -6) --grab a random height for the stalagmite
 	for j = bot, 0 do --y
 		for k = -3, 3 do
@@ -204,7 +206,7 @@ function caverealms:crystal_stalagmite(x,y,z, area, data)
 	local c_stone = minetest.get_content_id("default:stone")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
 	local c_crystore = minetest.get_content_id("caverealms:glow_ore")
-	
+
 	local top = math.random(5,H_CRY) --grab a random height for the stalagmite
 	for j = 0, top do --y
 		for k = -3, 3 do
@@ -243,13 +245,13 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	or minp.z < ZMIN or maxp.z > ZMAX then
 		return
 	end
-	
+
 	--determine if there's enough spacing between layers to start a realm
 	local chulay = math.floor((minp.y + 32) / 80) -- chunk layer number, 0 = surface chunk
 	if math.fmod(chulay, CHUINT) ~= 0 then -- if chulay / CHUINT has a remainder
 		return
 	end
-	
+
 	--easy to reference variables for limits and time
 	local t1 = os.clock()
 	local x1 = maxp.x
@@ -258,21 +260,21 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local x0 = minp.x
 	local y0 = minp.y
 	local z0 = minp.z
-	
+
 	--let people know you're generating a realm
 	print ("[caverealms] chunk minp ("..x0.." "..y0.." "..z0..")")
-	
+
 	--fire up the LVM
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
 	local data = vm:get_data()
-	
+
 	--grab content IDs
 	local c_air = minetest.get_content_id("air")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
 	local c_gem = minetest.get_content_id("caverealms:glow_gem")
 	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
-	
+
 	--some mandatory values
 	local sidelen = x1 - x0 + 1 --usually equals 80 with default mapgen values. Always a multiple of 16.
 	local chulens = {x=sidelen, y=sidelen, z=sidelen} --position table to pass to get3dMap_flat
@@ -284,7 +286,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local nvals_cluster = minetest.get_perlin_map(np_cluster, chulens):get3dMap_flat(minposxyz)
 
 	local nvals_wave = minetest.get_perlin_map(np_wave, chulens):get2dMap_flat(minposxz)
-	
+
 	--more values
 	local nixyz = 1 --short for node index xyz
 	local nixz = 1 --node index xz
@@ -295,9 +297,9 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local nixyz2 = 1
 	local nixz2 = 1
 	local stable2 = {}
-	
+
 	for z = z0, z1 do --for each xy plane progressing northwards
-		for x = x0, x1 do 
+		for x = x0, x1 do
 			local si = x - x0 + 1 --stability index
 			dirt[si] = 0 --no dirt here... yet
 			roof[si] = 0
@@ -333,7 +335,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					else
 						stable[si] = stable[si] + 1
 					end
-					
+
 				elseif dirt[si] >= 1 then -- node above surface
 					--place dirt on floor, add plants
 					data[vi] = c_moss
@@ -361,7 +363,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			nixz = nixz - sidelen --shift the 2D index down a layer
 		end
 		nixz = nixz + sidelen --shift the 2D index up a layer
-		
+
 		--second loop to obtain ceiling
 		for y = y0, y1 do -- for each x row progressing downwards
 			local vi = area:index(x0, y, z) --grab the index of the node to edit
@@ -382,7 +384,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					else
 						stable2[si] = stable2[si] + 1
 					end
-				
+
 				elseif roof[si] >= 1 then --and stable2[si] >= 2 then -- node above surface
 					if math.random() <= STALCHA then
 						local ai = area:index(x,y+1,z)
@@ -402,8 +404,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		end
 		nixz2 = nixz2 + sidelen
 	end
-	
-	
+
+
 	--write these changes to the world
 	vm:set_data(data)
 	vm:set_lighting({day=0, night=0})
