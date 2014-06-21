@@ -1,4 +1,4 @@
--- caverealms 0.2 by HeroOfTheWinds
+-- caverealms 0.2.1 by HeroOfTheWinds
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- License: code WTFPL
@@ -34,6 +34,7 @@ local H_LAG = 15 --max height for stalagmites
 local H_LAC = 20 --...stalactites
 local CRYSTAL = 0.007 --chance of glow crystal formations
 local H_CRY = 9 --max height of glow crystals
+local H_CLAC = 13 --max height of glow crystal stalactites
 local GEMCHA = 0.03 --chance of small glow gems
 
 
@@ -235,6 +236,41 @@ function caverealms:crystal_stalagmite(x,y,z, area, data)
 	end
 end
 
+--crystal stalactite spawner
+function caverealms:crystal_stalactite(x,y,z, area, data)
+	--contest ids
+	local c_stone = minetest.get_content_id("default:stone")
+	local c_crystore = minetest.get_content_id("caverealms:glow_ore")
+	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
+
+	local bot = math.random(-H_CLAC, -6) --grab a random height for the stalagmite
+	for j = bot, 0 do --y
+		for k = -3, 3 do
+			for l = -3, 3 do
+				if j >= -1 then
+					if k*k + l*l <= 9 then
+						local vi = area:index(x+k, y+j, z+l-3)
+						data[vi] = c_stone
+					end
+				elseif j >= bot/5 then
+					if k*k + l*l <= 4 then
+						local vi = area:index(x+k, y+j, z+l-3)
+						data[vi] = c_crystore
+					end
+				elseif j >= bot/5 * 3 then
+					if k*k + l*l <= 1 then
+						local vi = area:index(x+k, y+j, z+l-3)
+						data[vi] = c_crystal
+					end
+				else
+					local vi = area:index(x, y+j, z-3)
+					data[vi] = c_crystal
+				end
+			end
+		end
+	end
+end
+
 
 -- On generated function
 
@@ -390,6 +426,12 @@ minetest.register_on_generated(function(minp, maxp, seed)
 						local ai = area:index(x,y+1,z)
 						if data[ai] ~= c_air then
 							caverealms:stalactite(x, y, z, area, data)
+						end
+					end
+					if math.random() <= CRYSTAL then
+						local ai = area:index(x,y+1,z)
+						if data[ai] ~= c_air then
+							caverealms:crystal_stalactite(x,y,z, area, data)
 						end
 					end
 					roof[si] = 0
