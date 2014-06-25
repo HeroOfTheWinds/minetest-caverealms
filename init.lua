@@ -36,6 +36,7 @@ local CRYSTAL = 0.007 --chance of glow crystal formations
 local H_CRY = 9 --max height of glow crystals
 local H_CLAC = 13 --max height of glow crystal stalactites
 local GEMCHA = 0.03 --chance of small glow gems
+local MUSHCHA = 0.04 --chance of mushrooms
 
 
 -- 3D noise for caverns
@@ -71,12 +72,37 @@ local np_wave = {
 	persist = 0.5
 }
 
+-- 2D noise for biome
+
+local np_biome = {
+	offset = 0,
+	scale = 1,
+	spread = {x=250, y=250, z=250},
+	seed = 9130,
+	octaves = 3,
+	persist = 0.5
+}
+
 -- Nodes
 
 --glowing crystal
 minetest.register_node("caverealms:glow_crystal", {
 	description = "Glow Crystal",
 	tiles = {"caverealms_glow_crystal.png"},
+	is_ground_content = true,
+	groups = {cracky=3},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 13,
+	paramtype = "light",
+	use_texture_alpha = true,
+	drawtype = "glasslike",
+	sunlight_propagates = true,
+})
+
+--glowing emerald
+minetest.register_node("caverealms:glow_emerald", {
+	description = "Glow Emerald",
+	tiles = {"caverealms_glow_emerald.png"},
 	is_ground_content = true,
 	groups = {cracky=3},
 	sounds = default.node_sound_glass_defaults(),
@@ -98,7 +124,18 @@ minetest.register_node("caverealms:glow_ore", {
 	paramtype = "light",
 })
 
---glowing crystal
+--embedded emerald
+minetest.register_node("caverealms:glow_emerald_ore", {
+	description = "Glow Emerald Ore",
+	tiles = {"caverealms_glow_emerald_ore.png"},
+	is_ground_content = true,
+	groups = {cracky=2},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 10,
+	paramtype = "light",
+})
+
+--glowing crystal gem
 minetest.register_node("caverealms:glow_gem", {
 	description = "Glow Gem",
 	tiles = {"caverealms_glow_gem.png"},
@@ -118,6 +155,7 @@ minetest.register_node("caverealms:glow_gem", {
 		fixed = {-0.5, -0.5, -0.5, 0.5, -5/16, 0.5},
 	},
 })
+
 --cave mossy cobble - bluish?
 minetest.register_node("caverealms:stone_with_moss", {
 	description = "Cave Stone with Moss",
@@ -130,8 +168,39 @@ minetest.register_node("caverealms:stone_with_moss", {
 	}),
 })
 
+--cave lichen-covered cobble - purple-ish
+minetest.register_node("caverealms:stone_with_lichen", {
+	description = "Cave Stone with Lichen",
+	tiles = {"default_cobble.png^caverealms_lichen.png", "default_cobble.png", "default_cobble.png^caverealms_lichen_side.png"},
+	is_ground_content = true,
+	groups = {crumbly=3},
+	drop = 'default:cobblestone',
+	sounds = default.node_sound_dirt_defaults({
+		footstep = {name="default_grass_footstep", gain=0.25},
+	}),
+})
+
 --cave plants go here
 
+--glowing fungi
+minetest.register_node("caverealms:fungus", {
+	description = "Glowing Fungus",
+	tiles = {"caverealms_fungi.png"},
+	inventory_image = "caverealms_fungi.png",
+	wield_image = "caverealms_fungi.png",
+	is_ground_content = true,
+	groups = {oddly_breakable_by_hand=3},
+	light_source = 5,
+	paramtype = "light",
+	drawtype = "plantlike",
+	walkable = false,
+	buildable_to = true,
+	visual_scale = 1.0,
+	selection_box = {
+		type = "fixed",
+		fixed = {-0.5, -0.5, -0.5, 0.5, -5/16, 0.5},
+	},
+})
 
 --FUNCTIONS--
 
@@ -202,11 +271,14 @@ function caverealms:stalactite(x,y,z, area, data)
 end
 
 --glowing crystal stalagmite spawner
-function caverealms:crystal_stalagmite(x,y,z, area, data)
+function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 	--contest ids
 	local c_stone = minetest.get_content_id("default:stone")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
 	local c_crystore = minetest.get_content_id("caverealms:glow_ore")
+	local c_emerald = minetest.get_content_id("caverealms:glow_emerald")
+	local c_emore = minetest.get_content_id("caverealms:glow_emerald_ore")
+	
 
 	local top = math.random(5,H_CRY) --grab a random height for the stalagmite
 	for j = 0, top do --y
@@ -220,16 +292,28 @@ function caverealms:crystal_stalagmite(x,y,z, area, data)
 				elseif j <= top/5 then
 					if k*k + l*l <= 4 then
 						local vi = area:index(x+k, y+j, z+l-3)
-						data[vi] = c_crystore
+						if biome == 1 then
+							data[vi] = c_crystore
+						elseif biome == 2 then
+							data[vi] = c_emore
+						end
 					end
 				elseif j <= top/5 * 3 then
 					if k*k + l*l <= 1 then
 						local vi = area:index(x+k, y+j, z+l-3)
-						data[vi] = c_crystal
+						if biome == 1 then
+							data[vi] = c_crystal
+						elseif biome == 2 then
+							data[vi] = c_emerald
+						end
 					end
 				else
 					local vi = area:index(x, y+j, z-3)
-					data[vi] = c_crystal
+					if biome == 1 then
+						data[vi] = c_crystal
+					elseif biome == 2 then
+						data[vi] = c_emerald
+					end
 				end
 			end
 		end
@@ -237,11 +321,13 @@ function caverealms:crystal_stalagmite(x,y,z, area, data)
 end
 
 --crystal stalactite spawner
-function caverealms:crystal_stalactite(x,y,z, area, data)
+function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 	--contest ids
 	local c_stone = minetest.get_content_id("default:stone")
 	local c_crystore = minetest.get_content_id("caverealms:glow_ore")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
+	local c_emerald = minetest.get_content_id("caverealms:glow_emerald")
+	local c_emore = minetest.get_content_id("caverealms:glow_emerald_ore")
 
 	local bot = math.random(-H_CLAC, -6) --grab a random height for the stalagmite
 	for j = bot, 0 do --y
@@ -255,16 +341,29 @@ function caverealms:crystal_stalactite(x,y,z, area, data)
 				elseif j >= bot/5 then
 					if k*k + l*l <= 4 then
 						local vi = area:index(x+k, y+j, z+l-3)
-						data[vi] = c_crystore
+						if biome == 1 then
+							data[vi] = c_crystore
+						elseif biome == 2 then
+							data[vi] = c_emore
+						end
 					end
 				elseif j >= bot/5 * 3 then
 					if k*k + l*l <= 1 then
 						local vi = area:index(x+k, y+j, z+l-3)
-						data[vi] = c_crystal
+						if biome == 1 then
+							data[vi] = c_crystal
+						elseif biome == 2 then
+							data[vi] = c_emerald
+						end
 					end
 				else
 					local vi = area:index(x, y+j, z-3)
-					data[vi] = c_crystal
+					local vi = area:index(x, y+j, z-3)
+					if biome == 1 then
+						data[vi] = c_crystal
+					elseif biome == 2 then
+						data[vi] = c_emerald
+					end
 				end
 			end
 		end
@@ -310,6 +409,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
 	local c_gem = minetest.get_content_id("caverealms:glow_gem")
 	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
+	local c_lichen = minetest.get_content_id("caverealms:stone_with_lichen")
+	local c_fungus = minetest.get_content_id("caverealms:fungus")
 
 	--some mandatory values
 	local sidelen = x1 - x0 + 1 --usually equals 80 with default mapgen values. Always a multiple of 16.
@@ -318,10 +419,11 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local minposxz = {x=x0, y=z0}
 
 	--generate the all important perlin that makes nice terrains
-	local nvals_cave = minetest.get_perlin_map(np_cave, chulens):get3dMap_flat(minposxyz)
-	local nvals_cluster = minetest.get_perlin_map(np_cluster, chulens):get3dMap_flat(minposxyz)
+	local nvals_cave = minetest.get_perlin_map(np_cave, chulens):get3dMap_flat(minposxyz) --obviously for caves
+	local nvals_cluster = minetest.get_perlin_map(np_cluster, chulens):get3dMap_flat(minposxyz) --how large of clusters of caverns?
 
-	local nvals_wave = minetest.get_perlin_map(np_wave, chulens):get2dMap_flat(minposxz)
+	local nvals_wave = minetest.get_perlin_map(np_wave, chulens):get2dMap_flat(minposxz) --wavy structure of cavern ceilings and floors
+	local nvals_biome = minetest.get_perlin_map(np_biome, chulens):get2dMap_flat({x=x0+150, y=z0+50}) --2D noise for biomes (will be 3D humidity/temp later)
 
 	--more values
 	local nixyz = 1 --short for node index xyz
@@ -373,20 +475,38 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					end
 
 				elseif dirt[si] >= 1 then -- node above surface
+					--determine biome
+					local biome = false --preliminary declaration
+					n_biome = nvals_biome[nixz] --make an easier reference to the noise
+					if n_biome >= 0 then
+						biome = 1
+					elseif n_biome < 0 then
+						biome = 2
+					else
+						biome = 1 --not necessary, just to prevent bugs
+					end
 					--place dirt on floor, add plants
-					data[vi] = c_moss
+					if biome == 1 then
+						data[vi] = c_moss
+					elseif biome == 2 then
+						data[vi] = c_lichen
+					end
 					--on random chance, place glow crystal formations
 					if math.random() <= CRYSTAL then
-						caverealms:crystal_stalagmite(x, y, z, area, data)
+						caverealms:crystal_stalagmite(x, y, z, area, data, biome)
 					end
 					--randomly place stalagmites
 					if math.random() <= STAGCHA then
-						caverealms:stalagmite(x, y, z, area, data)
+						caverealms:stalagmite(x, y, z, area, data, biome)
 					end
 					--randomly place glow gems
-					if math.random() < GEMCHA then
+					if math.random() < GEMCHA and biome == 1 then
 						local gi = area:index(x,y+1,z)
 						data[gi] = c_gem
+					end
+					if math.random() < MUSHCHA and biome == 2 then
+						local gi = area:index(x,y+1,z)
+						data[gi] = c_fungus
 					end
 					dirt[si] = 0
 				else -- solid rock
@@ -421,17 +541,27 @@ minetest.register_on_generated(function(minp, maxp, seed)
 						stable2[si] = stable2[si] + 1
 					end
 
-				elseif roof[si] >= 1 then --and stable2[si] >= 2 then -- node above surface
+				elseif roof[si] >= 1 then --and stable2[si] >= 2 then -- node at roof
+					--determine biome
+					local biome = false --preliminary declaration
+					n_biome = nvals_biome[nixz2] --make an easier reference to the noise
+					if n_biome >= 0 then
+						biome = 1
+					elseif n_biome < 0 then
+						biome = 2
+					else
+						biome = 1 --not necessary, just to prevent bugs
+					end
 					if math.random() <= STALCHA then
 						local ai = area:index(x,y+1,z)
 						if data[ai] ~= c_air then
-							caverealms:stalactite(x, y, z, area, data)
+							caverealms:stalactite(x, y, z, area, data, biome)
 						end
 					end
 					if math.random() <= CRYSTAL then
 						local ai = area:index(x,y+1,z)
 						if data[ai] ~= c_air then
-							caverealms:crystal_stalactite(x,y,z, area, data)
+							caverealms:crystal_stalactite(x,y,z, area, data, biome)
 						end
 					end
 					roof[si] = 0
