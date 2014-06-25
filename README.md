@@ -8,5 +8,6 @@ https://forum.minetest.net/viewtopic.php?f=9&t=9522
 
 Contributors:
 HeroOfTheWinds - everything
+Zeno- - additional ideas and fine tuning
 
 Licensed under the WTFPL
