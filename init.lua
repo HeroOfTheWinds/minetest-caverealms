@@ -278,7 +278,7 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 	local c_crystore = minetest.get_content_id("caverealms:glow_ore")
 	local c_emerald = minetest.get_content_id("caverealms:glow_emerald")
 	local c_emore = minetest.get_content_id("caverealms:glow_emerald_ore")
-	
+
 
 	local top = math.random(5,H_CRY) --grab a random height for the stalagmite
 	for j = 0, top do --y
@@ -406,6 +406,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 
 	--grab content IDs
 	local c_air = minetest.get_content_id("air")
+	local c_water = minetest.get_content_id("default:water_source")
+	local c_lava = minetest.get_content_id("defalt:lava_source")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
 	local c_gem = minetest.get_content_id("caverealms:glow_gem")
 	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
@@ -441,10 +443,10 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			local si = x - x0 + 1 --stability index
 			dirt[si] = 0 --no dirt here... yet
 			roof[si] = 0
-			local nodename = minetest.get_node({x=x,y=y0-1,z=z}).name --grab the name of the node just below
-			if nodename == "air"
-			or nodename == "default:water_source"
-			or nodename == "default:lava_source" then --if a cave or any kind of lake
+			local nodeid = area:index(x, y0-1, z) --grab the ID of the node just below
+			if nodeid == c_air
+			or nodeid == c_water
+			or nodeid == c_lava then --if a cave or any kind of lake
 				stable[si] = 0 --this is not stable for plants or falling nodes above
 				stable2[si] = 0
 			else -- all else including ignore in ungenerated chunks
@@ -466,7 +468,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				end
 				local density = nvals_cave[nixyz] - grad --how dense is the emptiness?
 				if density < 0 and density > -0.7 then -- if cavern "shell"
-					local nodename = minetest.get_node({x=x,y=y,z=z}).name --grab the name of the node
+					--local nodename = minetest.get_node({x=x,y=y,z=z}).name --grab the name of the node
 					data[vi] = c_air --make emptiness
 					if density < STOTHR and stable[si] <= STABLE then
 						dirt[si] = dirt[si] + 1
