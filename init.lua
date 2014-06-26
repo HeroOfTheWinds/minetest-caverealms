@@ -1,4 +1,4 @@
--- caverealms 0.2.1 by HeroOfTheWinds
+-- caverealms 0.2.5 by HeroOfTheWinds
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- License: code WTFPL
