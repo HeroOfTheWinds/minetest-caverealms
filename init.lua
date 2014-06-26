@@ -37,6 +37,9 @@ local H_CRY = 9 --max height of glow crystals
 local H_CLAC = 13 --max height of glow crystal stalactites
 local GEMCHA = 0.03 --chance of small glow gems
 local MUSHCHA = 0.04 --chance of mushrooms
+local MYCCHA = 0.03 --chance of mycena mushrooms
+local WORMCHA = 0.03 --chance of glow worms
+local GIANTCHA = 0.001 -- chance of giant mushrooms
 
 
 -- 3D noise for caverns
@@ -180,6 +183,26 @@ minetest.register_node("caverealms:stone_with_lichen", {
 	}),
 })
 
+--glow worms
+minetest.register_node("caverealms:glow_worm", {
+	description = "Glow Worms",
+	tiles = {"caverealms_glow_worm.png"},
+	inventory_image = "caverealms_glow_worm.png",
+	wield_image = "caverealms_glow_worm.png",
+	is_ground_content = true,
+	groups = {oddly_breakable_by_hand=3},
+	light_source = 9,
+	paramtype = "light",
+	drawtype = "plantlike",
+	walkable = false,
+	buildable_to = true,
+	visual_scale = 1.0,
+	selection_box = {
+		type = "fixed",
+		fixed = {-0.5, -0.5, -0.5, 0.5, -0.5, 0.5},
+	},
+})
+
 --cave plants go here
 
 --glowing fungi
@@ -200,6 +223,52 @@ minetest.register_node("caverealms:fungus", {
 		type = "fixed",
 		fixed = {-0.5, -0.5, -0.5, 0.5, -5/16, 0.5},
 	},
+})
+
+--mycena mushroom
+minetest.register_node("caverealms:mycena", {
+	description = "Mycena Mushroom",
+	tiles = {"caverealms_mycena.png"},
+	inventory_image = "caverealms_mycena.png",
+	wield_image = "caverealms_mycena.png",
+	is_ground_content = true,
+	groups = {oddly_breakable_by_hand=3},
+	light_source = 6,
+	paramtype = "light",
+	drawtype = "plantlike",
+	walkable = false,
+	buildable_to = true,
+	visual_scale = 1.0,
+	selection_box = {
+		type = "fixed",
+		fixed = {-0.5, -0.5, -0.5, 0.5, -0.5, 0.5},
+	},
+})
+
+--giant mushroom
+--stem
+minetest.register_node("caverealms:mushroom_stem", {
+	description = "Giant Mushroom Stem",
+	tiles = {"caverealms_mushroom_stem.png"},
+	is_ground_content = true,
+	groups = {oddly_breakable_by_hand=1},
+})
+
+--cap
+minetest.register_node("caverealms:mushroom_cap", {
+	description = "Giant Mushroom Cap",
+	tiles = {"caverealms_mushroom_cap.png"},
+	is_ground_content = true,
+	groups = {oddly_breakable_by_hand=1},
+})
+
+--gills
+minetest.register_node("caverealms:mushroom_gills", {
+	description = "Giant Mushroom Gills",
+	tiles = {"caverealms_mushroom_gills.png"},
+	is_ground_content = true,
+	groups = {oddly_breakable_by_hand=1},
+	drawtype = "plantlike",
 })
 
 --FUNCTIONS--
@@ -370,6 +439,92 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 	end
 end
 
+--function to create giant 'shrooms
+function caverealms:giant_shroom(x, y, z, area, data)
+	--as usual, grab the content ID's
+	local c_stem = minetest.get_content_id("caverealms:mushroom_stem")
+	local c_cap = minetest.get_content_id("caverealms:mushroom_cap")
+	local c_gills = minetest.get_content_id("caverealms:mushroom_gills")
+	
+	z = z - 5
+	--cap
+	for k = -5, 5 do
+	for l = -5, 5 do
+		if k*k + l*l <= 25 then
+			local vi = area:index(x+k, y+5, z+l)
+			data[vi] = c_cap
+		end
+		if k*k + l*l <= 16 then
+			local vi = area:index(x+k, y+6, z+l)
+			data[vi] = c_cap
+			vi = area:index(x+k, y+5, z+l)
+			data[vi] = c_gills
+		end
+		if k*k + l*l <= 9 then
+			local vi = area:index(x+k, y+7, z+l)
+			data[vi] = c_cap
+		end
+		if k*k + l*l <= 4 then
+			local vi = area:index(x+k, y+8, z+l)
+			data[vi] = c_cap
+		end
+	end
+	end
+	--stem
+	for j = 0, 5 do
+		for k = -1,1 do
+			local vi = area:index(x+k, y+j, z)
+			data[vi] = c_stem
+			if k == 0 then
+				local ai = area:index(x, y+j, z+1)
+				data[ai] = c_stem
+				ai = area:index(x, y+j, z-1)
+				data[ai] = c_stem
+			end
+		end
+	end
+end
+
+function caverealms:legacy_giant_shroom(x, y, z, area, data) --leftovers :P
+	--as usual, grab the content ID's
+	local c_stem = minetest.get_content_id("caverealms:mushroom_stem")
+	local c_cap = minetest.get_content_id("caverealms:mushroom_cap")
+	
+	z = z - 4
+	--cap
+	for k = -4, 4 do
+	for l = -4, 4 do
+		if k*k + l*l <= 16 then
+			local vi = area:index(x+k, y+5, z+l)
+			data[vi] = c_cap
+		end
+		if k*k + l*l <= 9 then
+			local vi = area:index(x+k, y+4, z+l)
+			data[vi] = c_cap
+			vi = area:index(x+k, y+6, z+l)
+			data[vi] = c_cap
+		end
+		if k*k + l*l <= 4 then
+			local vi = area:index(x+k, y+7, z+l)
+			data[vi] = c_cap
+		end
+	end
+	end
+	--stem
+	for j = 0, 4 do
+		for k = -1,1 do
+			local vi = area:index(x+k, y+j, z)
+			data[vi] = c_stem
+			if k == 0 then
+				local ai = area:index(x, y+j, z+1)
+				data[ai] = c_stem
+				ai = area:index(x, y+j, z-1)
+				data[ai] = c_stem
+			end
+		end
+	end
+end
+
 
 -- On generated function
 
@@ -413,6 +568,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
 	local c_lichen = minetest.get_content_id("caverealms:stone_with_lichen")
 	local c_fungus = minetest.get_content_id("caverealms:fungus")
+	local c_mycena = minetest.get_content_id("caverealms:mycena")
+	local c_worm = minetest.get_content_id("caverealms:glow_worm")
 
 	--some mandatory values
 	local sidelen = x1 - x0 + 1 --usually equals 80 with default mapgen values. Always a multiple of 16.
@@ -506,9 +663,18 @@ minetest.register_on_generated(function(minp, maxp, seed)
 						local gi = area:index(x,y+1,z)
 						data[gi] = c_gem
 					end
-					if math.random() < MUSHCHA and biome == 2 then
-						local gi = area:index(x,y+1,z)
-						data[gi] = c_fungus
+					if biome == 2 then
+						if math.random() < MUSHCHA then
+							local gi = area:index(x,y+1,z)
+							data[gi] = c_fungus
+						end
+						if math.random() < MYCCHA then
+							local gi = area:index(x,y+1,z)
+							data[gi] = c_mycena
+						end
+						if math.random() < GIANTCHA then
+							caverealms:giant_shroom(x, y, z, area, data)
+						end
 					end
 					dirt[si] = 0
 				else -- solid rock
@@ -553,6 +719,27 @@ minetest.register_on_generated(function(minp, maxp, seed)
 						biome = 2
 					else
 						biome = 1 --not necessary, just to prevent bugs
+					end
+					--glow worm
+					if math.random() <= WORMCHA then
+						local ai = area:index(x,y+1,z)--index of node above
+						if data[ai] ~= c_air then
+							data[vi] = c_worm
+							local bi = area:index(x,y-1,z) --below index 1
+							data[bi] = c_worm
+							if math.random(2) == 1 then
+								local ci = area:index(x,y-2,z)
+								data[ci] = c_worm
+								if math.random(2) == 1 then
+									local di = area:index(x,y-3,z)
+									data[di] = c_worm
+									if math.random(2) == 1 then
+										local ei = area:index(x,y-4,z)
+										data[ei] = c_worm
+									end
+								end
+							end
+						end
 					end
 					if math.random() <= STALCHA then
 						local ai = area:index(x,y+1,z)
