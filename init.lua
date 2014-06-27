@@ -1,4 +1,4 @@
--- caverealms 0.2.6 by HeroOfTheWinds
+-- caverealms 0.2.7 by HeroOfTheWinds
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- License: code WTFPL
@@ -8,6 +8,7 @@ caverealms = {}
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(modpath.."/config.lua")
+dofile(modpath.."/crafting.lua")
 
 -- Parameters (see also config.lua)
 
@@ -267,7 +268,7 @@ minetest.register_node("caverealms:mycena", {
 	visual_scale = 1.0,
 	selection_box = {
 		type = "fixed",
-		fixed = {-0.5, -0.5, -0.5, 0.5, -0.5, 0.5},
+		fixed = {-0.5, -0.5, -0.5, 0.5, -5/16, 0.5},
 	},
 })
 
@@ -378,7 +379,7 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 	
 	--for randomness
 	local mode = 1
-	if math.random(20) == 1 then
+	if math.random(15) == 1 then
 		mode = 2
 	end
 	if biome == 3 then
@@ -482,7 +483,7 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 	
 	--for randomness
 	local mode = 1
-	if math.random(20) == 1 then
+	if math.random(15) == 1 then
 		mode = 2
 	end
 	if biome == 3 then
