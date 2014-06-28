@@ -229,6 +229,39 @@ minetest.register_node("caverealms:glow_gem", {
 	},
 })
 
+
+local glow_gem_size = { 1.0, 1.2, 1.4, 1.6, 1.7 }
+
+for i in ipairs(glow_gem_size) do
+	if i == 1 then
+		nodename = "caverealms:glow_gem"
+	else
+		nodename = "caverealms:glow_gem_"..i
+	end
+
+	vs = glow_gem_size[i]
+
+	minetest.register_node(nodename, {
+		description = "Glow Gem",
+		tiles = {"caverealms_glow_gem.png"},
+		inventory_image = "caverealms_glow_gem.png",
+		wield_image = "caverealms_glow_gem.png",
+		is_ground_content = true,
+		groups = {cracky=3, oddly_breakable_by_hand=1},
+		sounds = default.node_sound_glass_defaults(),
+		light_source = 11,
+		paramtype = "light",
+		drawtype = "plantlike",
+		walkable = false,
+		buildable_to = true,
+		visual_scale = vs,
+		selection_box = {
+			type = "fixed",
+			fixed = {-0.5*vs, -0.5*vs, -0.5*vs, 0.5*vs, -5/16*vs, 0.5*vs},
+		}
+	})
+end
+
 --upward pointing icicle
 minetest.register_node("caverealms:icicle_up", {
 	description = "Icicle",
@@ -810,7 +843,11 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_ice = minetest.get_content_id("default:ice")
 	local c_thinice = minetest.get_content_id("caverealms:thin_ice")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
-	local c_gem = minetest.get_content_id("caverealms:glow_gem")
+	local c_gem1 = minetest.get_content_id("caverealms:glow_gem")
+	local c_gem2 = minetest.get_content_id("caverealms:glow_gem_2")
+	local c_gem3 = minetest.get_content_id("caverealms:glow_gem_3")
+	local c_gem4 = minetest.get_content_id("caverealms:glow_gem_4")
+	local c_gem5 = minetest.get_content_id("caverealms:glow_gem_5")
 	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
 	local c_lichen = minetest.get_content_id("caverealms:stone_with_lichen")
 	local c_algae = minetest.get_content_id("caverealms:stone_with_algae")
@@ -949,8 +986,14 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					end
 					--randomly place glow gems
 					if math.random() < GEMCHA and biome == 1 then
+						-- of random size
+						local gems = { c_gem1, c_gem2, c_gem3, c_gem4 }
+						local gidx = math.random(1, 12)
+						if gidx > 5 then
+							gidx = 1
+						end
 						local gi = area:index(x,y+1,z)
-						data[gi] = c_gem
+						data[gi] = gems[gidx]
 					end
 					if biome == 2 then
 						if math.random() < MUSHCHA then
