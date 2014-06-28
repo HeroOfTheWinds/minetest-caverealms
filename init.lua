@@ -475,7 +475,7 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 	local c_meseore = minetest.get_content_id("default:stone_with_mese")
 	local c_ice = minetest.get_content_id("default:ice")
 	local c_thinice = minetest.get_content_id("caverealms:thin_ice")
-	
+
 	--for randomness
 	local mode = 1
 	if math.random(15) == 1 then
@@ -494,105 +494,52 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 		end
 	end
 
+	local stalids = {
+		{ {c_emore, c_emerald},   {c_crystore, c_crystal} },
+		{ {c_crystore, c_crystal},{c_emore, c_emerald} },
+		{ {c_meseore, c_mesecry}, {c_emore, c_emerald} },
+		{ {c_crystore, c_crystal},{c_ice, c_thinice} }
+	}
+
+	local nid_a
+	local nid_b
+
+	if biome > 3 then
+		if mode == 1 then
+			nid_a = c_ice
+		else
+			nid_a = c_stone
+		end
+	elseif mode == 1 then
+		nid_a = stalids[biome][1][1]
+		nid_b = stalids[biome][1][2]
+	else
+		nid_a = stalids[biome][2][1]
+		nid_b = stalids[biome][2][2]
+	end
+
 	local top = math.random(5,H_CRY) --grab a random height for the stalagmite
 	for j = 0, top do --y
 		for k = -3, 3 do
 			for l = -3, 3 do
 				if j == 0 then
 					if k*k + l*l <= 9 then
-						if (biome == 4 or biome == 5) and mode == 1 then
-							local vi = area:index(x+k, y+j, z+l-3)
-							data[vi] = c_ice
-						else
-							local vi = area:index(x+k, y+j, z+l-3)
-							data[vi] = c_stone
-						end
+						local vi = area:index(x+k, y+j, z+l-3)
+						data[vi] = nid_a
 					end
 				elseif j <= top/5 then
 					if k*k + l*l <= 4 then
 						local vi = area:index(x+k, y+j, z+l-3)
-						if biome == 1 then
-							if mode == 2 then
-								data[vi] = c_emore
-							else
-								data[vi] = c_crystore
-							end
-						elseif biome == 2 then
-							if mode == 2 then
-								data[vi] = c_crystore
-							else
-								data[vi] = c_emore
-							end
-						elseif biome == 3 then
-							if mode == 2 then
-								data[vi] = c_meseore
-							else
-								data[vi] = c_emore
-							end
-						elseif biome == 4 or biome == 5 then
-							if mode == 2 then
-								data[vi] = c_crystore
-							else
-								data[vi] = c_ice
-							end
-						end
+						data[vi] = nid_b
 					end
 				elseif j <= top/5 * 3 then
 					if k*k + l*l <= 1 then
 						local vi = area:index(x+k, y+j, z+l-3)
-						if biome == 1 then
-							if mode == 2 then
-								data[vi] = c_emerald
-							else
-								data[vi] = c_crystal
-							end
-						elseif biome == 2 then
-							if mode == 2 then
-								data[vi] = c_crystal
-							else
-								data[vi] = c_emerald
-							end
-						elseif biome == 3 then
-							if mode == 2 then
-								data[vi] = c_mesecry
-							else
-								data[vi] = c_emerald
-							end
-						elseif biome == 4 or biome == 5 then
-							if mode == 2 then
-								data[vi] = c_crystal
-							else
-								data[vi] = c_thinice
-							end
-						end
+						data[vi] = nid_b
 					end
 				else
 					local vi = area:index(x, y+j, z-3)
-					if biome == 1 then
-						if mode == 2 then
-							data[vi] = c_emerald
-						else
-							data[vi] = c_crystal
-						end
-					elseif biome == 2 then
-						if mode == 2 then
-							data[vi] = c_crystal
-						else
-							data[vi] = c_emerald
-						end
-					elseif biome == 3 then
-						if mode == 2 then
-							data[vi] = c_mesecry
-						else
-							data[vi] = c_emerald
-						end
-					elseif biome == 4 or biome == 5 then
-						if mode == 2 then
-							data[vi] = c_crystal
-						else
-							data[vi] = c_thinice
-						end
-					end
+					data[vi] = nid_b
 				end
 			end
 		end
@@ -610,8 +557,8 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 	local c_mesecry = minetest.get_content_id("caverealms:glow_mese")
 	local c_meseore = minetest.get_content_id("default:stone_with_mese")
 	local c_ice = minetest.get_content_id("default:ice")
-	local c_thinice = minetest.get_content_id("caverealms:hanging_thin_ice") 
-	
+	local c_thinice = minetest.get_content_id("caverealms:hanging_thin_ice")
+
 	--for randomness
 	local mode = 1
 	if math.random(15) == 1 then
@@ -741,7 +688,7 @@ function caverealms:giant_shroom(x, y, z, area, data)
 	local c_stem = minetest.get_content_id("caverealms:mushroom_stem")
 	local c_cap = minetest.get_content_id("caverealms:mushroom_cap")
 	local c_gills = minetest.get_content_id("caverealms:mushroom_gills")
-	
+
 	z = z - 5
 	--cap
 	for k = -5, 5 do
@@ -785,7 +732,7 @@ function caverealms:legacy_giant_shroom(x, y, z, area, data) --leftovers :P
 	--as usual, grab the content ID's
 	local c_stem = minetest.get_content_id("caverealms:mushroom_stem")
 	local c_cap = minetest.get_content_id("caverealms:mushroom_cap")
-	
+
 	z = z - 4
 	--cap
 	for k = -4, 4 do
@@ -869,9 +816,9 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_algae = minetest.get_content_id("caverealms:stone_with_algae")
 	local c_fungus = minetest.get_content_id("caverealms:fungus")
 	local c_mycena = minetest.get_content_id("caverealms:mycena")
-	local c_worm = minetest.get_content_id("caverealms:glow_worm")	
+	local c_worm = minetest.get_content_id("caverealms:glow_worm")
 	local c_iciu = minetest.get_content_id("caverealms:icicle_up")
-	local c_icid = minetest.get_content_id("caverealms:icicle_down")	
+	local c_icid = minetest.get_content_id("caverealms:icicle_down")
 
 	--some mandatory values
 	local sidelen = x1 - x0 + 1 --usually equals 80 with default mapgen values. Always a multiple of 16.
@@ -974,7 +921,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 						--bi = area:index(x,y-4,z)
 						--data[bi] = c_stone
 						--bi = area:index(x,y-5,z)
-						--data[bi] = c_stone						
+						--data[bi] = c_stone
 					elseif biome == 5 then
 						data[vi] = c_ice
 						local bi = area:index(x,y-1,z)
