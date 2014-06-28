@@ -9,6 +9,7 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 
 dofile(modpath.."/config.lua")
 dofile(modpath.."/crafting.lua")
+dofile(modpath.."/falling_ice.lua")
 
 -- Parameters (see also config.lua)
 
@@ -41,6 +42,10 @@ local MUSHCHA = 0.04 --chance of mushrooms
 local MYCCHA = 0.03 --chance of mycena mushrooms
 local WORMCHA = 0.03 --chance of glow worms
 local GIANTCHA = 0.001 -- chance of giant mushrooms
+local ICICHA = 0.035 -- chance of icicles
+
+local FALLING_ICICLES = true --toggle to turn on or off falling icicles in glaciated biome
+local FALLCHA = 0.33 --chance of causing the structure to fall
 
 
 -- 3D noise for caverns
@@ -153,6 +158,56 @@ minetest.register_node("caverealms:glow_emerald_ore", {
 	paramtype = "light",
 })
 
+--thin (transparent) ice
+minetest.register_node("caverealms:thin_ice", {
+	description = "Thin Ice",
+	tiles = {"caverealms_thin_ice.png"},
+	is_ground_content = true,
+	groups = {cracky=3},
+	sounds = default.node_sound_glass_defaults(),
+	use_texture_alpha = true,
+	drawtype = "glasslike",
+	sunlight_propagates = true,
+})
+
+--alternate version for stalactites
+minetest.register_node("caverealms:hanging_thin_ice", {
+	description = "Thin Ice",
+	tiles = {"caverealms_thin_ice.png"},
+	is_ground_content = true,
+	groups = {cracky=3},
+	sounds = default.node_sound_glass_defaults(),
+	use_texture_alpha = true,
+	drawtype = "glasslike",
+	sunlight_propagates = true,
+	drop = "caverealms:thin_ice",
+	after_dig_node = function(pos, oldnode, oldmetadata, digger)
+		if FALLING_ICICLES then
+			if math.random() <= FALLCHA then
+				obj = minetest.add_entity(pos, "caverealms:falling_ice")
+				obj:get_luaentity():set_node(oldnode)
+				for y = -13, 13 do
+					for x = -3, 3 do
+					for z = -3, 3 do
+						local npos = {x=pos.x+x, y=pos.y+y, z=pos.z+z}
+						if minetest.get_node(npos).name == "caverealms:hanging_thin_ice" then
+							nobj = minetest.add_entity(npos, "caverealms:falling_ice")
+							nobj:get_luaentity():set_node(oldnode)
+							minetest.remove_node(npos)
+						end
+					end
+					end
+				end
+				minetest.remove_node(pos)
+			else
+				return 1
+			end
+		else
+			return 1
+		end
+	end,
+})
+
 --glowing crystal gem
 minetest.register_node("caverealms:glow_gem", {
 	description = "Glow Gem",
@@ -174,13 +229,55 @@ minetest.register_node("caverealms:glow_gem", {
 	},
 })
 
+--upward pointing icicle
+minetest.register_node("caverealms:icicle_up", {
+	description = "Icicle",
+	tiles = {"caverealms_icicle_up.png"},
+	inventory_image = "caverealms_icicle_up.png",
+	wield_image = "caverealms_icicle_up.png",
+	is_ground_content = true,
+	groups = {cracky=3, oddly_breakable_by_hand=1},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 8,
+	paramtype = "light",
+	drawtype = "plantlike",
+	walkable = false,
+	buildable_to = true,
+	visual_scale = 1.0,
+	selection_box = {
+		type = "fixed",
+		fixed = {-0.5, -0.5, -0.5, 0.5, -5/16, 0.5},
+	},
+})
+
+--downward pointing icicle
+minetest.register_node("caverealms:icicle_down", {
+	description = "Icicle",
+	tiles = {"caverealms_icicle_down.png"},
+	inventory_image = "caverealms_icicle_down.png",
+	wield_image = "caverealms_icicle_down.png",
+	is_ground_content = true,
+	groups = {cracky=3, oddly_breakable_by_hand=1},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 8,
+	paramtype = "light",
+	drawtype = "plantlike",
+	walkable = false,
+	buildable_to = true,
+	visual_scale = 1.0,
+	selection_box = {
+		type = "fixed",
+		fixed = {-0.5, -0.5, -0.5, 0.5, -5/16, 0.5},
+	},
+})
+
 --cave mossy cobble - bluish?
 minetest.register_node("caverealms:stone_with_moss", {
 	description = "Cave Stone with Moss",
 	tiles = {"default_cobble.png^caverealms_moss.png", "default_cobble.png", "default_cobble.png^caverealms_moss_side.png"},
 	is_ground_content = true,
 	groups = {crumbly=3},
-	drop = 'default:cobblestone',
+	drop = 'default:cobble',
 	sounds = default.node_sound_dirt_defaults({
 		footstep = {name="default_grass_footstep", gain=0.25},
 	}),
@@ -192,7 +289,7 @@ minetest.register_node("caverealms:stone_with_lichen", {
 	tiles = {"default_cobble.png^caverealms_lichen.png", "default_cobble.png", "default_cobble.png^caverealms_lichen_side.png"},
 	is_ground_content = true,
 	groups = {crumbly=3},
-	drop = 'default:cobblestone',
+	drop = 'default:cobble',
 	sounds = default.node_sound_dirt_defaults({
 		footstep = {name="default_grass_footstep", gain=0.25},
 	}),
@@ -204,7 +301,7 @@ minetest.register_node("caverealms:stone_with_algae", {
 	tiles = {"default_cobble.png^caverealms_algae.png", "default_cobble.png", "default_cobble.png^caverealms_algae_side.png"},
 	is_ground_content = true,
 	groups = {crumbly=3},
-	drop = 'default:cobblestone',
+	drop = 'default:cobble',
 	sounds = default.node_sound_dirt_defaults({
 		footstep = {name="default_grass_footstep", gain=0.25},
 	}),
@@ -376,6 +473,8 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 	local c_emore = minetest.get_content_id("caverealms:glow_emerald_ore")
 	local c_mesecry = minetest.get_content_id("caverealms:glow_mese")
 	local c_meseore = minetest.get_content_id("default:stone_with_mese")
+	local c_ice = minetest.get_content_id("default:ice")
+	local c_thinice = minetest.get_content_id("caverealms:thin_ice")
 	
 	--for randomness
 	local mode = 1
@@ -383,7 +482,14 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 		mode = 2
 	end
 	if biome == 3 then
-		if math.random(10) == 1 then
+		if math.random(25) == 1 then
+			mode = 2
+		else
+			mode = 1
+		end
+	end
+	if biome == 4 or biome == 5 then
+		if math.random(3) == 1 then
 			mode = 2
 		end
 	end
@@ -394,8 +500,13 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 			for l = -3, 3 do
 				if j == 0 then
 					if k*k + l*l <= 9 then
-						local vi = area:index(x+k, y+j, z+l-3)
-						data[vi] = c_stone
+						if (biome == 4 or biome == 5) and mode == 1 then
+							local vi = area:index(x+k, y+j, z+l-3)
+							data[vi] = c_ice
+						else
+							local vi = area:index(x+k, y+j, z+l-3)
+							data[vi] = c_stone
+						end
 					end
 				elseif j <= top/5 then
 					if k*k + l*l <= 4 then
@@ -417,6 +528,12 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 								data[vi] = c_meseore
 							else
 								data[vi] = c_emore
+							end
+						elseif biome == 4 or biome == 5 then
+							if mode == 2 then
+								data[vi] = c_crystore
+							else
+								data[vi] = c_ice
 							end
 						end
 					end
@@ -441,6 +558,12 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 							else
 								data[vi] = c_emerald
 							end
+						elseif biome == 4 or biome == 5 then
+							if mode == 2 then
+								data[vi] = c_crystal
+							else
+								data[vi] = c_thinice
+							end
 						end
 					end
 				else
@@ -463,6 +586,12 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 						else
 							data[vi] = c_emerald
 						end
+					elseif biome == 4 or biome == 5 then
+						if mode == 2 then
+							data[vi] = c_crystal
+						else
+							data[vi] = c_thinice
+						end
 					end
 				end
 			end
@@ -480,6 +609,8 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 	local c_emore = minetest.get_content_id("caverealms:glow_emerald_ore")
 	local c_mesecry = minetest.get_content_id("caverealms:glow_mese")
 	local c_meseore = minetest.get_content_id("default:stone_with_mese")
+	local c_ice = minetest.get_content_id("default:ice")
+	local c_thinice = minetest.get_content_id("caverealms:hanging_thin_ice") 
 	
 	--for randomness
 	local mode = 1
@@ -487,7 +618,14 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 		mode = 2
 	end
 	if biome == 3 then
-		if math.random(10) == 1 then
+		if math.random(25) == 1 then
+			mode = 2
+		else
+			mode = 1
+		end
+	end
+	if biome == 4 or biome == 5 then
+		if math.random(3) == 1 then
 			mode = 2
 		end
 	end
@@ -498,8 +636,13 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 			for l = -3, 3 do
 				if j >= -1 then
 					if k*k + l*l <= 9 then
-						local vi = area:index(x+k, y+j, z+l-3)
-						data[vi] = c_stone
+						if (biome == 4 or biome == 5) and mode == 1 then
+							local vi = area:index(x+k, y+j, z+l-3)
+							data[vi] = c_ice
+						else
+							local vi = area:index(x+k, y+j, z+l-3)
+							data[vi] = c_stone
+						end
 					end
 				elseif j >= bot/5 then
 					if k*k + l*l <= 4 then
@@ -521,6 +664,12 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 								data[vi] = c_meseore
 							else
 								data[vi] = c_emore
+							end
+						elseif biome == 4 or biome == 5 then
+							if mode == 2 then
+								data[vi] = c_crystore
+							else
+								data[vi] = c_ice
 							end
 						end
 					end
@@ -545,6 +694,12 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 							else
 								data[vi] = c_emerald
 							end
+						elseif biome == 4 or biome == 5 then
+							if mode == 2 then
+								data[vi] = c_crystal
+							else
+								data[vi] = c_thinice
+							end
 						end
 					end
 				else
@@ -566,6 +721,12 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 							data[vi] = c_mesecry
 						else
 							data[vi] = c_emerald
+						end
+					elseif biome == 4 or biome == 5 then
+						if mode == 2 then
+							data[vi] = c_crystal
+						else
+							data[vi] = c_thinice
 						end
 					end
 				end
@@ -696,8 +857,11 @@ minetest.register_on_generated(function(minp, maxp, seed)
 
 	--grab content IDs
 	local c_air = minetest.get_content_id("air")
+	local c_stone = minetest.get_content_id("default:stone")
 	local c_water = minetest.get_content_id("default:water_source")
 	local c_lava = minetest.get_content_id("default:lava_source")
+	local c_ice = minetest.get_content_id("default:ice")
+	local c_thinice = minetest.get_content_id("caverealms:thin_ice")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
 	local c_gem = minetest.get_content_id("caverealms:glow_gem")
 	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
@@ -705,7 +869,9 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_algae = minetest.get_content_id("caverealms:stone_with_algae")
 	local c_fungus = minetest.get_content_id("caverealms:fungus")
 	local c_mycena = minetest.get_content_id("caverealms:mycena")
-	local c_worm = minetest.get_content_id("caverealms:glow_worm")
+	local c_worm = minetest.get_content_id("caverealms:glow_worm")	
+	local c_iciu = minetest.get_content_id("caverealms:icicle_up")
+	local c_icid = minetest.get_content_id("caverealms:icicle_down")	
 
 	--some mandatory values
 	local sidelen = x1 - x0 + 1 --usually equals 80 with default mapgen values. Always a multiple of 16.
@@ -773,12 +939,18 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					--determine biome
 					local biome = false --preliminary declaration
 					n_biome = nvals_biome[nixz] --make an easier reference to the noise
-					if n_biome >= 0.3 then
-						biome = 1
-					elseif n_biome < -0.3 then
-						biome = 2
+					if n_biome >= 0 and n_biome < 0.5 then
+						biome = 1 --moss
+					elseif n_biome <= -0.5 then
+						biome = 2 --fungal
+					elseif n_biome >= 0.5 then
+						if n_biome >= 0.7 then
+							biome = 5 --deep glaciated
+						else
+							biome = 4 --glaciated
+						end
 					else
-						biome = 3
+						biome = 3 --algae
 					end
 					--place dirt on floor, add plants
 					if biome == 1 then
@@ -787,6 +959,38 @@ minetest.register_on_generated(function(minp, maxp, seed)
 						data[vi] = c_lichen
 					elseif biome == 3 then
 						data[vi] = c_algae
+					elseif biome == 4 then
+						data[vi] = c_thinice
+						local bi = area:index(x,y-1,z)
+						data[bi] = c_thinice
+						--bi = area:index(x,y-2,z)
+						--data[bi] = c_water
+						--bi = area:index(x,y-3,z)
+						--if math.random() <= GEMCHA then
+							--data[bi] = c_gem
+						--else
+							--data[bi] = c_water
+						--end
+						--bi = area:index(x,y-4,z)
+						--data[bi] = c_stone
+						--bi = area:index(x,y-5,z)
+						--data[bi] = c_stone						
+					elseif biome == 5 then
+						data[vi] = c_ice
+						local bi = area:index(x,y-1,z)
+						data[bi] = c_ice
+						--bi = area:index(x,y-2,z)
+						--data[bi] = c_water
+						--bi = area:index(x,y-3,z)
+						--if math.random() <= GEMCHA then
+							--data[bi] = c_gem
+						--else
+							--data[bi] = c_water
+						--end
+						--bi = area:index(x,y-4,z)
+						--data[bi] = c_stone
+						--bi = area:index(x,y-5,z)
+						--data[bi] = c_stone
 					end
 					--on random chance, place glow crystal formations
 					if math.random() <= CRYSTAL then
@@ -813,6 +1017,10 @@ minetest.register_on_generated(function(minp, maxp, seed)
 						if math.random() < GIANTCHA then
 							caverealms:giant_shroom(x, y, z, area, data)
 						end
+					end
+					if math.random() < ICICHA and (biome == 4 or biome == 5) then
+						local gi = area:index(x,y+1,z)
+						data[gi] = c_iciu
 					end
 					dirt[si] = 0
 				else -- solid rock
@@ -851,12 +1059,18 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					--determine biome
 					local biome = false --preliminary declaration
 					n_biome = nvals_biome[nixz2] --make an easier reference to the noise
-					if n_biome >= 0.3 then
-						biome = 1
-					elseif n_biome < -0.3 then
-						biome = 2
+					if n_biome >= 0 and n_biome < 0.5 then
+						biome = 1 --moss
+					elseif n_biome <= -0.5 then
+						biome = 2 --fungal
+					elseif n_biome >= 0.5 then
+						if n_biome >= 0.7 then
+							biome = 5
+						else
+							biome = 4 --glaciated
+						end
 					else
-						biome = 3
+						biome = 3 --algae
 					end
 					--glow worm
 					if math.random() <= WORMCHA then
@@ -877,6 +1091,13 @@ minetest.register_on_generated(function(minp, maxp, seed)
 									end
 								end
 							end
+						end
+					end
+					if math.random() < ICICHA and (biome == 4 or biome == 5) then
+						local ai = area:index(x,y+1,z)--index of node above
+						if data[ai] ~= c_air then
+							local gi = area:index(x,y-1,z)
+							data[gi] = c_icid
 						end
 					end
 					if math.random() <= STALCHA then
