@@ -426,6 +426,7 @@ minetest.register_node("caverealms:mushroom_gills", {
 	is_ground_content = true,
 	groups = {oddly_breakable_by_hand=1},
 	drawtype = "plantlike",
+	paramtype = "light",
 })
 
 --FUNCTIONS--
