@@ -988,7 +988,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					--randomly place glow gems
 					if math.random() < GEMCHA and biome == 1 then
 						-- of random size
-						local gems = { c_gem1, c_gem2, c_gem3, c_gem4 }
+						local gems = { c_gem1, c_gem2, c_gem3, c_gem4, c_gem5 }
 						local gidx = math.random(1, 12)
 						if gidx > 5 then
 							gidx = 1
