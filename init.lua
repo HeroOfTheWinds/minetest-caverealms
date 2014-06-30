@@ -44,9 +44,6 @@ local WORMCHA = caverealms.config.wormcha --0.03 --chance of glow worms
 local GIANTCHA = caverealms.config.giantcha --0.001 -- chance of giant mushrooms
 local ICICHA = caverealms.config.icicha --0.035 -- chance of icicles
 
-local FALLING_ICICLES = caverealms.config.falling_icicles --true --toggle to turn on or off falling icicles in glaciated biome
-local FALLCHA = caverealms.config.fallcha --0.33 --chance of causing the structure to fall
-
 
 
 -- 3D noise for caverns
@@ -134,15 +131,19 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_ice = minetest.get_content_id("default:ice")
 	local c_thinice = minetest.get_content_id("caverealms:thin_ice")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
-	local c_gem = minetest.get_content_id("caverealms:glow_gem")
+	local c_gem1 = minetest.get_content_id("caverealms:glow_gem")
+	local c_gem2 = minetest.get_content_id("caverealms:glow_gem_2")
+	local c_gem3 = minetest.get_content_id("caverealms:glow_gem_3")
+	local c_gem4 = minetest.get_content_id("caverealms:glow_gem_4")
+	local c_gem5 = minetest.get_content_id("caverealms:glow_gem_5")
 	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
 	local c_lichen = minetest.get_content_id("caverealms:stone_with_lichen")
 	local c_algae = minetest.get_content_id("caverealms:stone_with_algae")
 	local c_fungus = minetest.get_content_id("caverealms:fungus")
 	local c_mycena = minetest.get_content_id("caverealms:mycena")
-	local c_worm = minetest.get_content_id("caverealms:glow_worm")	
+	local c_worm = minetest.get_content_id("caverealms:glow_worm")
 	local c_iciu = minetest.get_content_id("caverealms:icicle_up")
-	local c_icid = minetest.get_content_id("caverealms:icicle_down")	
+	local c_icid = minetest.get_content_id("caverealms:icicle_down")
 
 	--some mandatory values
 	local sidelen = x1 - x0 + 1 --usually equals 80 with default mapgen values. Always a multiple of 16.
@@ -250,8 +251,14 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					end
 					--randomly place glow gems
 					if math.random() < GEMCHA and biome == 1 then
+						-- of random size
+						local gems = { c_gem1, c_gem2, c_gem3, c_gem4, c_gem5 }
+						local gidx = math.random(1, 12)
+						if gidx > 5 then
+							gidx = 1
+						end
 						local gi = area:index(x,y+1,z)
-						data[gi] = c_gem
+						data[gi] = gems[gidx]
 					end
 					if biome == 2 then --if fungus biome
 						if math.random() < MUSHCHA then --mushrooms

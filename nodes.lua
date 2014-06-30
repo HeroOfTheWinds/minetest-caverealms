@@ -2,6 +2,10 @@
 
 --NODES--
 
+local FALLING_ICICLES = caverealms.config.falling_icicles --true --toggle to turn on or off falling icicles in glaciated biome
+local FALLCHA = caverealms.config.fallcha --0.33 --chance of causing the structure to fall
+
+
 --glowing crystal
 minetest.register_node("caverealms:glow_crystal", {
 	description = "Glow Crystal",
@@ -119,25 +123,37 @@ minetest.register_node("caverealms:hanging_thin_ice", {
 })
 
 --glowing crystal gem
-minetest.register_node("caverealms:glow_gem", {
-	description = "Glow Gem",
-	tiles = {"caverealms_glow_gem.png"},
-	inventory_image = "caverealms_glow_gem.png",
-	wield_image = "caverealms_glow_gem.png",
-	is_ground_content = true,
-	groups = {cracky=3, oddly_breakable_by_hand=1},
-	sounds = default.node_sound_glass_defaults(),
-	light_source = 11,
-	paramtype = "light",
-	drawtype = "plantlike",
-	walkable = false,
-	buildable_to = true,
-	visual_scale = 1.0,
-	selection_box = {
-		type = "fixed",
-		fixed = {-0.5, -0.5, -0.5, 0.5, -5/16, 0.5},
-	},
-})
+local glow_gem_size = { 1.0, 1.2, 1.4, 1.6, 1.7 }
+
+for i in ipairs(glow_gem_size) do
+	if i == 1 then
+		nodename = "caverealms:glow_gem"
+	else
+		nodename = "caverealms:glow_gem_"..i
+	end
+
+	vs = glow_gem_size[i]
+
+	minetest.register_node(nodename, {
+		description = "Glow Gem",
+		tiles = {"caverealms_glow_gem.png"},
+		inventory_image = "caverealms_glow_gem.png",
+		wield_image = "caverealms_glow_gem.png",
+		is_ground_content = true,
+		groups = {cracky=3, oddly_breakable_by_hand=1},
+		sounds = default.node_sound_glass_defaults(),
+		light_source = 11,
+		paramtype = "light",
+		drawtype = "plantlike",
+		walkable = false,
+		buildable_to = true,
+		visual_scale = vs,
+		selection_box = {
+			type = "fixed",
+			fixed = {-0.5*vs, -0.5*vs, -0.5*vs, 0.5*vs, -5/16*vs, 0.5*vs},
+		}
+	})
+end
 
 --upward pointing icicle
 minetest.register_node("caverealms:icicle_up", {
@@ -303,4 +319,5 @@ minetest.register_node("caverealms:mushroom_gills", {
 	is_ground_content = true,
 	groups = {oddly_breakable_by_hand=1},
 	drawtype = "plantlike",
+	paramtype = "light",
 })
