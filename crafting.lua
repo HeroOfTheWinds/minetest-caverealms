@@ -2,17 +2,17 @@
 
 --CRAFT ITEMS--
 
---mycena essence
-minetest.register_craftitem("caverealms:mycena_essence", {
-	description = "Mycena Essence",
-	inventory_image = "caverealms_mycena_essence.png",
+--mycena powder
+minetest.register_craftitem("caverealms:mycena_powder", {
+	description = "Mycena Powder",
+	inventory_image = "caverealms_mycena_powder.png",
 })
 
 --CRAFT RECIPES--
 
---mycena essence
+--mycena powder
 minetest.register_craft({
-	output = "caverealms:mycena_essence",
+	output = "caverealms:mycena_powder",
 	type = "shapeless",
 	recipe = {"caverealms:mycena"}
 })
@@ -23,7 +23,7 @@ minetest.register_craft({
 	output = "caverealms:glow_mese",
 	recipe = {
 		{"default:mese_crystal_fragment","default:mese_crystal_fragment","default:mese_crystal_fragment"},
-		{"default:mese_crystal_fragment","caverealms:mycena_essence","default:mese_crystal_fragment"},
+		{"default:mese_crystal_fragment","caverealms:mycena_powder","default:mese_crystal_fragment"},
 		{"default:mese_crystal_fragment","default:mese_crystal_fragment","default:mese_crystal_fragment"}
 	}
 })
