@@ -25,11 +25,13 @@ local ZMIN = -33000
 local ZMAX = 33000
 
 local CHUINT = caverealms.config.chuint -- Chunk interval for cave realms
-local WAVAMP = 16 -- Structure wave amplitude
+local CLUSAV = -0.5 --cave threshold, determines rarity of caves. -1 = small and rare, 0.5 = default, 0 = nearly half the volume.
+local CLUSAM = 0.5 --cave size/density threshold. 0 is off, or little variation, 1 is max.
+local WAVAMP = 24 -- Structure wave amplitude
 local HISCAL = 32 -- Upper structure vertical scale
 local LOSCAL = 32 -- Lower structure vertical scale
-local HIEXP = 0.5 -- Upper structure density gradient exponent
-local LOEXP = 0.5 -- Lower structure density gradient exponent
+local HIEXP = 0.3 -- Upper structure density gradient exponent
+local LOEXP = 0.3 -- Lower structure density gradient exponent
 local DIRTHR = 0.04 -- Dirt density threshold
 local STOTHR = 0.08 -- Stone density threshold
 local STABLE = 2 -- Minimum number of stacked stone nodes in column for dirt / sand on top
@@ -197,7 +199,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				else
 					grad = ((cavemid - y) / LOSCAL) ^ LOEXP --for the floor
 				end
-				local density = nvals_cave[nixyz] - grad --how dense is the emptiness?
+				--local density = nvals_cave[nixyz] - grad --how dense is the emptiness?
+				local density = nvals_cave[nixyz] - grad - CLUSAV - nvals_cluster[nixyz] * CLUSAM
 				if density < 0 and density > -0.7 then -- if cavern "shell"
 					--local nodename = minetest.get_node({x=x,y=y,z=z}).name --grab the name of the node
 					data[vi] = c_air --make emptiness
@@ -302,7 +305,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				else
 					grad = ((cavemid - y) / LOSCAL) ^ LOEXP --for the floor
 				end
-				local density = nvals_cave[nixyz2] - grad --how dense is the emptiness?
+				--local density = nvals_cave[nixyz2] - grad --how dense is the emptiness?
+				local density = nvals_cave[nixyz2] - grad - CLUSAV - nvals_cluster[nixyz2] * CLUSAM
 				if density < 0 and density > -0.7 then -- if cavern "shell"
 					if density < STOTHR and stable2[si] <= STABLE then
 						roof[si] = roof[si] + 1
