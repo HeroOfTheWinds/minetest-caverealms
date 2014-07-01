@@ -81,6 +81,7 @@ minetest.register_node("caverealms:thin_ice", {
 	drawtype = "glasslike",
 	sunlight_propagates = true,
 	freezemelt = "default:water_source",
+	paramtype = "light",
 })
 
 --alternate version for stalactites
@@ -95,6 +96,7 @@ minetest.register_node("caverealms:hanging_thin_ice", {
 	sunlight_propagates = true,
 	drop = "caverealms:thin_ice",
 	freezemelt = "default:water_flowing",
+	paramtype = "light",
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
 		if FALLING_ICICLES then
 			if math.random() <= FALLCHA then
