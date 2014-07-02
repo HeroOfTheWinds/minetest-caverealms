@@ -23,7 +23,7 @@ end
 --generation settings
 setting("number", "ymin", -33000) --bottom realm limit
 setting("number", "ymax", -700) --top realm limit
-setting("number", "chuint", 2) --vertical chunk interval between caves
+setting("number", "chuint", 4) --vertical chunk interval between caves
 
 --falling icicles
 setting("bool", "falling_icicles", true) --enable/disable falling icicles

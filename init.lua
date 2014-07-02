@@ -1,4 +1,4 @@
--- caverealms 0.2.8 by HeroOfTheWinds
+-- caverealms 0.2.9 by HeroOfTheWinds
 -- For latest stable Minetest and back to 0.4.8
 -- Depends default
 -- License: code WTFPL
@@ -104,9 +104,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 
 	--determine if there's enough spacing between layers to start a realm
 	local chulay = math.floor((minp.y + 32) / 80) -- chunk layer number, 0 = surface chunk
-	if math.fmod(chulay, CHUINT) ~= 0 then -- if chulay / CHUINT has a remainder
-		return
-	end
+	local tercen = (math.floor(chulay / CHUINT) * CHUINT + CHUINT / 2) * 80 - 32 -- terrain centre of this layer
 
 	--easy to reference variables for limits and time
 	local t1 = os.clock()
@@ -192,7 +190,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			for x = x0, x1 do -- for each node do
 				--here's the good part
 				local si = x - x0 + 1 --stability index
-				local cavemid = chumid + nvals_wave[nixz] * WAVAMP --grab the middle of the cave's amplitude
+				local cavemid = tercen + nvals_wave[nixz] * WAVAMP --grab the middle of the cave's amplitude
 				local grad
 				if y > cavemid then
 					grad = ((y - cavemid) / HISCAL) ^ HIEXP --for the ceiling
@@ -298,7 +296,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			for x = x0, x1 do -- for each node do
 				--here's the good part
 				local si = x - x0 + 1 --stability index
-				local cavemid = chumid + nvals_wave[nixz2] * WAVAMP --grab the middle of the cave's amplitude
+				local cavemid = tercen + nvals_wave[nixz2] * WAVAMP --grab the middle of the cave's amplitude
 				local grad
 				if y > cavemid then
 					grad = ((y - cavemid) / HISCAL) ^ HIEXP --for the ceiling
