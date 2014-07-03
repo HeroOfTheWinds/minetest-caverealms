@@ -23,7 +23,7 @@ end
 --generation settings
 setting("number", "ymin", -33000) --bottom realm limit
 setting("number", "ymax", -700) --top realm limit
-setting("number", "chuint", 4) --vertical chunk interval between caves
+setting("number", "tcave", 0.5) --cave threshold
 
 --falling icicles
 setting("bool", "falling_icicles", true) --enable/disable falling icicles
@@ -40,6 +40,6 @@ setting("number", "h_clac", 13) --max height of glow crystal stalactites
 setting("number", "gemcha", 0.03) --chance of small glow gems
 setting("number", "mushcha", 0.04) --chance of mushrooms
 setting("number", "myccha", 0.03) --chance of mycena mushrooms
-setting("number", "wormcha", 0.03) --chance of glow worms
+setting("number", "wormcha", 0.02) --chance of glow worms
 setting("number", "giantcha", 0.001) --chance of giant mushrooms
 setting("number", "icicha", 0.035) --chance of icicles

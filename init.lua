@@ -1,7 +1,9 @@
--- caverealms 0.2.9 by HeroOfTheWinds
--- For latest stable Minetest and back to 0.4.8
+-- caverealms indev by HeroOfTheWinds
+-- original cave code modified from paramat's subterrain
+-- For Minetest 0.4.8 stable
 -- Depends default
 -- License: code WTFPL
+
 
 caverealms = {} --create a container for functions and constants
 
@@ -15,26 +17,12 @@ dofile(modpath.."/falling_ice.lua") --complicated function for falling icicles
 dofile(modpath.."/nodes.lua") --node definitions
 dofile(modpath.."/functions.lua") --function definitions
 
--- Parameters (see also config.lua)
+-- Parameters
 
 local YMIN = caverealms.config.ymin -- Approximate realm limits.
 local YMAX = caverealms.config.ymax
-local XMIN = -33000
-local XMAX = 33000
-local ZMIN = -33000
-local ZMAX = 33000
-
-local CHUINT = caverealms.config.chuint -- Chunk interval for cave realms
-local CLUSAV = -0.5 --cave threshold, determines rarity of caves. -1 = small and rare, 0.5 = default, 0 = nearly half the volume.
-local CLUSAM = 0.5 --cave size/density threshold. 0 is off, or little variation, 1 is max.
-local WAVAMP = 24 -- Structure wave amplitude
-local HISCAL = 32 -- Upper structure vertical scale
-local LOSCAL = 32 -- Lower structure vertical scale
-local HIEXP = 0.3 -- Upper structure density gradient exponent
-local LOEXP = 0.3 -- Lower structure density gradient exponent
-local DIRTHR = 0.04 -- Dirt density threshold
-local STOTHR = 0.08 -- Stone density threshold
-local STABLE = 2 -- Minimum number of stacked stone nodes in column for dirt / sand on top
+local TCAVE = caverealms.config.tcave --0.5 -- Cave threshold. 1 = small rare caves, 0.5 = 1/3rd ground volume, 0 = 1/2 ground volume
+local BLEND = 128 -- Cave blend distance near YMIN, YMAX
 
 local STAGCHA = caverealms.config.stagcha --0.002 --chance of stalagmites
 local STALCHA = caverealms.config.stalcha --0.003 --chance of stalactites
@@ -46,31 +34,18 @@ local WORMCHA = caverealms.config.wormcha --0.03 --chance of glow worms
 local GIANTCHA = caverealms.config.giantcha --0.001 -- chance of giant mushrooms
 local ICICHA = caverealms.config.icicha --0.035 -- chance of icicles
 
-
-
--- 3D noise for caverns
+-- 3D noise for caves
 
 local np_cave = {
 	offset = 0,
 	scale = 1,
-	spread = {x=512, y=256, z=512},
-	seed = 277777979,
+	spread = {x=512, y=256, z=512}, -- squashed 2:1
+	seed = 59033,
 	octaves = 6,
-	persist = 0.6
+	persist = 0.63
 }
 
--- 3D noise for large scale cavern size/density variation
-
-local np_cluster = {
-	offset = 0,
-	scale = 1,
-	spread = {x=2048, y=2048, z=2048},
-	seed = 23,
-	octaves = 1,
-	persist = 0.5
-}
-
--- 2D noise for wave
+-- 3D noise for wave
 
 local np_wave = {
 	offset = 0,
@@ -78,7 +53,7 @@ local np_wave = {
 	spread = {x=256, y=256, z=256},
 	seed = -400000000089,
 	octaves = 3,
-	persist = 0.5
+	persist = 0.67
 }
 
 -- 2D noise for biome
@@ -92,21 +67,22 @@ local np_biome = {
 	persist = 0.5
 }
 
+-- Stuff
+
+subterrain = {}
+
+local yblmin = YMIN + BLEND * 1.5
+local yblmax = YMAX - BLEND * 1.5
+
 -- On generated function
 
 minetest.register_on_generated(function(minp, maxp, seed)
-	--only continue if within the bounds for creating cave realms
-	if minp.x < XMIN or maxp.x > XMAX
-	or minp.y < YMIN or maxp.y > YMAX
-	or minp.z < ZMIN or maxp.z > ZMAX then
-		return
+	--if out of range of caverealms limits
+	if minp.y > YMAX or maxp.y < YMIN then
+		return --quit; otherwise, you'd have stalagmites all over the place
 	end
 
-	--determine if there's enough spacing between layers to start a realm
-	local chulay = math.floor((minp.y + 32) / 80) -- chunk layer number, 0 = surface chunk
-	local tercen = (math.floor(chulay / CHUINT) * CHUINT + CHUINT / 2) * 80 - 32 -- terrain centre of this layer
-
-	--easy to reference variables for limits and time
+	--easy reference to commonly used values
 	local t1 = os.clock()
 	local x1 = maxp.x
 	local y1 = maxp.y
@@ -114,15 +90,13 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local x0 = minp.x
 	local y0 = minp.y
 	local z0 = minp.z
-
-	--let people know you're generating a realm
-	print ("[caverealms] chunk minp ("..x0.." "..y0.." "..z0..")")
-
-	--fire up the LVM
+	
+	print ("[caverealms] chunk minp ("..x0.." "..y0.." "..z0..")") --tell people you are generating a chunk
+	
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
 	local data = vm:get_data()
-
+	
 	--grab content IDs
 	local c_air = minetest.get_content_id("air")
 	local c_stone = minetest.get_content_id("default:stone")
@@ -144,251 +118,174 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_worm = minetest.get_content_id("caverealms:glow_worm")
 	local c_iciu = minetest.get_content_id("caverealms:icicle_up")
 	local c_icid = minetest.get_content_id("caverealms:icicle_down")
-
-	--some mandatory values
-	local sidelen = x1 - x0 + 1 --usually equals 80 with default mapgen values. Always a multiple of 16.
-	local chulens = {x=sidelen, y=sidelen, z=sidelen} --position table to pass to get3dMap_flat
-	local minposxyz = {x=x0, y=y0, z=z0}
-	local minposxz = {x=x0, y=z0}
-
-	--generate the all important perlin that makes nice terrains
-	local nvals_cave = minetest.get_perlin_map(np_cave, chulens):get3dMap_flat(minposxyz) --obviously for caves
-	local nvals_cluster = minetest.get_perlin_map(np_cluster, chulens):get3dMap_flat(minposxyz) --how large of clusters of caverns?
-
-	local nvals_wave = minetest.get_perlin_map(np_wave, chulens):get2dMap_flat(minposxz) --wavy structure of cavern ceilings and floors
+	
+	--mandatory values
+	local sidelen = x1 - x0 + 1 --length of a mapblock
+	local chulens = {x=sidelen, y=sidelen, z=sidelen} --table of chunk edges
+	local minposxyz = {x=x0, y=y0, z=z0} --bottom corner
+	local minposxz = {x=x0, y=z0} --2D bottom corner
+	
+	local nvals_cave = minetest.get_perlin_map(np_cave, chulens):get3dMap_flat(minposxyz) --cave noise for structure
+	local nvals_wave = minetest.get_perlin_map(np_wave, chulens):get3dMap_flat(minposxyz) --wavy structure of cavern ceilings and floors
 	local nvals_biome = minetest.get_perlin_map(np_biome, chulens):get2dMap_flat({x=x0+150, y=z0+50}) --2D noise for biomes (will be 3D humidity/temp later)
-
-	--more values
-	local nixyz = 1 --short for node index xyz
-	local nixz = 1 --node index xz
-	local stable = {} --stability for ground
-	local dirt = {} --table for ground surface
-	local chumid = y0 + sidelen / 2 --middle of the current chunk
-	local roof = {}
-	local nixyz2 = 1 --second 3d index for incrementation
-	local nixz2 = 1 --second 2d index
-	local stable2 = {} --second stability table
-
-	for z = z0, z1 do --for each xy plane progressing northwards
-		for x = x0, x1 do
-			local si = x - x0 + 1 --stability index
-			dirt[si] = 0 --no dirt here... yet
-			roof[si] = 0
-			local nodeid = area:index(x, y0-1, z) --grab the ID of the node just below
-			if nodeid == c_air
-			or nodeid == c_water
-			or nodeid == c_lava then --if a cave or any kind of lake
-				stable[si] = 0 --this is not stable for plants or falling nodes above
-				stable2[si] = 0
-			else -- all else including ignore in ungenerated chunks
-				stable[si] = STABLE --stuff can safely go above
-				stable2[si] = STABLE
+	
+	local nixyz = 1 --3D node index
+	local nixz = 1 --2D node index
+	local nixyz2 = 1 --second 3D index for second loop
+	
+	for z = z0, z1 do -- for each xy plane progressing northwards
+		--structure loop
+		for y = y0, y1 do -- for each x row progressing upwards
+			local tcave --declare variable
+			--determine the overal cave threshold
+			if y < yblmin then
+				tcave = TCAVE + ((yblmin - y) / BLEND) ^ 2
+			elseif y > yblmax then
+				tcave = TCAVE + ((y - yblmax) / BLEND) ^ 2
+			else
+				tcave = TCAVE
+			end
+			local vi = area:index(x0, y, z) --current node index
+			for x = x0, x1 do -- for each node do
+				if (nvals_cave[nixyz] + nvals_wave[nixyz])/2 > tcave then --if node falls within cave threshold
+					data[vi] = c_air --hollow it out to make the cave
+				end
+				--increment indices
+				nixyz = nixyz + 1
+				vi = vi + 1
 			end
 		end
-		for y = y1, y0, -1 do -- for each x row progressing downwards
-			local vi = area:index(x0, y, z) --grab the index of the node to edit
-			for x = x0, x1 do -- for each node do
-				--here's the good part
-				local si = x - x0 + 1 --stability index
-				local cavemid = tercen + nvals_wave[nixz] * WAVAMP --grab the middle of the cave's amplitude
-				local grad
-				if y > cavemid then
-					grad = ((y - cavemid) / HISCAL) ^ HIEXP --for the ceiling
-				else
-					grad = ((cavemid - y) / LOSCAL) ^ LOEXP --for the floor
-				end
-				--local density = nvals_cave[nixyz] - grad --how dense is the emptiness?
-				local density = nvals_cave[nixyz] - grad - CLUSAV - nvals_cluster[nixyz] * CLUSAM
-				if density < 0 and density > -0.7 then -- if cavern "shell"
-					--local nodename = minetest.get_node({x=x,y=y,z=z}).name --grab the name of the node
-					data[vi] = c_air --make emptiness
-					if density < STOTHR and stable[si] <= STABLE then
-						dirt[si] = dirt[si] + 1
-					else
-						stable[si] = stable[si] + 1
-					end
-
-				elseif dirt[si] >= 1 then -- node above surface
-					--determine biome
-					local biome = false --preliminary declaration
-					n_biome = nvals_biome[nixz] --make an easier reference to the noise
-					--compare noise values to determine a biome
-					if n_biome >= 0 and n_biome < 0.5 then
-						biome = 1 --moss
-					elseif n_biome <= -0.5 then
-						biome = 2 --fungal
-					elseif n_biome >= 0.5 then
-						if n_biome >= 0.7 then
-							biome = 5 --deep glaciated
-						else
-							biome = 4 --glaciated
-						end
-					else
-						biome = 3 --algae
-					end
-					--place floor material, add plants/decorations
-					if biome == 1 then
-						data[vi] = c_moss
-					elseif biome == 2 then
-						data[vi] = c_lichen
-					elseif biome == 3 then
-						data[vi] = c_algae
-					elseif biome == 4 then
-						data[vi] = c_thinice
-						local bi = area:index(x,y-1,z)
-						data[bi] = c_thinice					
-					elseif biome == 5 then
-						data[vi] = c_ice
-						local bi = area:index(x,y-1,z)
-						data[bi] = c_ice
-					end
-					--on random chance, place glow crystal formations
-					if math.random() <= CRYSTAL then
-						caverealms:crystal_stalagmite(x, y, z, area, data, biome)
-					end
-					--randomly place stalagmites
-					if math.random() <= STAGCHA then
-						caverealms:stalagmite(x, y, z, area, data, biome)
-					end
-					--randomly place glow gems
-					if math.random() < GEMCHA and biome == 1 then
-						-- of random size
-						local gems = { c_gem1, c_gem2, c_gem3, c_gem4, c_gem5 }
-						local gidx = math.random(1, 12)
-						if gidx > 5 then
-							gidx = 1
-						end
-						local gi = area:index(x,y+1,z)
-						data[gi] = gems[gidx]
-					end
-					if biome == 2 then --if fungus biome
-						if math.random() < MUSHCHA then --mushrooms
-							local gi = area:index(x,y+1,z)
-							data[gi] = c_fungus
-						end
-						if math.random() < MYCCHA then --mycena mushrooms
-							local gi = area:index(x,y+1,z)
-							data[gi] = c_mycena
-						end
-						if math.random() < GIANTCHA then --giant mushrooms
-							caverealms:giant_shroom(x, y, z, area, data)
-						end
-					end
-					if math.random() < ICICHA and (biome == 4 or biome == 5) then --if glaciated, place icicles
-						local gi = area:index(x,y+1,z)
-						data[gi] = c_iciu
-					end
-					dirt[si] = 0
-				else -- solid rock
-					stable[si] = 0
-				end
-				nixyz = nixyz + 1 --increment the 3D index
-				nixz = nixz + 1 --increment the 2D index
-				vi = vi + 1 --increment the area index
+		
+		--decoration loop
+		for y = y0, y1 do -- for each x row progressing upwards
+			local tcave --same as above
+			if y < yblmin then
+				tcave = TCAVE + ((yblmin - y) / BLEND) ^ 2
+			elseif y > yblmax then
+				tcave = TCAVE + ((y - yblmax) / BLEND) ^ 2
+			else
+				tcave = TCAVE
 			end
-			nixz = nixz - sidelen --shift the 2D index down a layer
-		end
-		nixz = nixz + sidelen --shift the 2D index up a layer
-
-		--second loop to obtain ceiling
-		for y = y0, y1 do -- for each x row progressing downwards
-			local vi = area:index(x0, y, z) --grab the index of the node to edit
+			local vi = area:index(x0, y, z)
 			for x = x0, x1 do -- for each node do
-				--here's the good part
-				local si = x - x0 + 1 --stability index
-				local cavemid = tercen + nvals_wave[nixz2] * WAVAMP --grab the middle of the cave's amplitude
-				local grad
-				if y > cavemid then
-					grad = ((y - cavemid) / HISCAL) ^ HIEXP --for the ceiling
+				
+				--determine biome
+				local biome = false --preliminary declaration
+				n_biome = nvals_biome[nixz] --make an easier reference to the noise
+				--compare noise values to determine a biome
+				if n_biome >= 0 and n_biome < 0.5 then
+					biome = 1 --moss
+				elseif n_biome <= -0.5 then
+					biome = 2 --fungal
+				elseif n_biome >= 0.5 then
+					if n_biome >= 0.7 then
+						biome = 5 --deep glaciated
+					else
+						biome = 4 --glaciated
+					end
 				else
-					grad = ((cavemid - y) / LOSCAL) ^ LOEXP --for the floor
+					biome = 3 --algae
 				end
-				--local density = nvals_cave[nixyz2] - grad --how dense is the emptiness?
-				local density = nvals_cave[nixyz2] - grad - CLUSAV - nvals_cluster[nixyz2] * CLUSAM
-				if density < 0 and density > -0.7 then -- if cavern "shell"
-					if density < STOTHR and stable2[si] <= STABLE then
-						roof[si] = roof[si] + 1
-					else
-						stable2[si] = stable2[si] + 1
-					end
-
-				elseif roof[si] >= 1 then --and stable2[si] >= 2 then -- node at roof
-					--determine biome
-					local biome = false --preliminary declaration
-					n_biome = nvals_biome[nixz2] --make an easier reference to the noise
-					if n_biome >= 0 and n_biome < 0.5 then
-						biome = 1 --moss
-					elseif n_biome <= -0.5 then
-						biome = 2 --fungal
-					elseif n_biome >= 0.5 then
-						if n_biome >= 0.7 then
-							biome = 5
-						else
-							biome = 4 --glaciated
+				
+				if math.floor(((nvals_cave[nixyz2] + nvals_wave[nixyz2])/2)*100) == math.floor(tcave*100) then
+					--ceiling
+					local ai = area:index(x,y+1,z) --above index
+					if data[ai] == c_stone and data[vi] == c_air then --ceiling
+						if math.random() < ICICHA and (biome == 4 or biome == 5) then
+							local bi = area:index(x,y-1,z)
+							data[bi] = c_icid
 						end
-					else
-						biome = 3 --algae
-					end
-					--glow worm
-					if math.random() <= WORMCHA then
-						local ai = area:index(x,y+1,z)--index of node above
-						if data[ai] ~= c_air then
+						if math.random() < WORMCHA then
 							data[vi] = c_worm
-							local bi = area:index(x,y-1,z) --below index 1
+							local bi = area:index(x,y-1,z)
 							data[bi] = c_worm
 							if math.random(2) == 1 then
-								local ci = area:index(x,y-2,z)
-								data[ci] = c_worm
-								if math.random(2) == 1 then
-									local di = area:index(x,y-3,z)
-									data[di] = c_worm
-									if math.random(2) == 1 then
-										local ei = area:index(x,y-4,z)
-										data[ei] = c_worm
-									end
+								local bbi = area:index(x,y-2,z)
+								data[bbi] = c_worm
+								if math.random(2) ==1 then
+									local bbbi = area:index(x,y-3,z)
+									data[bbbi] = c_worm
 								end
 							end
 						end
-					end
-					--self documenting...
-					if math.random() < ICICHA and (biome == 4 or biome == 5) then
-						local ai = area:index(x,y+1,z)--index of node above
-						if data[ai] ~= c_air then
-							local gi = area:index(x,y-1,z)
-							data[gi] = c_icid
+						if math.random() < STALCHA then
+							caverealms:stalactite(x,y,z, area, data)
 						end
-					end
-					if math.random() <= STALCHA then
-						local ai = area:index(x,y+1,z)
-						if data[ai] ~= c_air then
-							caverealms:stalactite(x, y, z, area, data, biome)
-						end
-					end
-					if math.random() <= CRYSTAL then
-						local ai = area:index(x,y+1,z)
-						if data[ai] ~= c_air then
+						if math.random() < CRYSTAL then
 							caverealms:crystal_stalactite(x,y,z, area, data, biome)
 						end
 					end
-					roof[si] = 0
-				else -- solid rock
-					stable2[si] = 0
+					--ground
+					local bi = area:index(x,y-1,z) --below index
+					if data[bi] == c_stone and data[vi] == c_air then --ground
+						local ai = area:index(x,y+1,z)
+						--place floor material, add plants/decorations
+						if biome == 1 then
+							data[vi] = c_moss
+							if math.random() < GEMCHA then
+								-- gems of random size
+								local gems = { c_gem1, c_gem2, c_gem3, c_gem4, c_gem5 }
+								local gidx = math.random(1, 12)
+								if gidx > 5 then
+									gidx = 1
+								end
+								data[ai] = gems[gidx]
+							end
+						elseif biome == 2 then
+							data[vi] = c_lichen
+							if math.random() < MUSHCHA then --mushrooms
+								data[ai] = c_fungus
+							end
+							if math.random() < MYCCHA then --mycena mushrooms
+								data[ai] = c_mycena
+							end
+							if math.random() < GIANTCHA then --giant mushrooms
+								caverealms:giant_shroom(x, y, z, area, data)
+							end
+						elseif biome == 3 then
+							data[vi] = c_algae
+						elseif biome == 4 then
+							data[vi] = c_thinice
+							local bi = area:index(x,y-1,z)
+							data[bi] = c_thinice
+							if math.random() < ICICHA then --if glaciated, place icicles
+								data[ai] = c_iciu
+							end
+						elseif biome == 5 then
+							data[vi] = c_ice
+							local bi = area:index(x,y-1,z)
+							data[bi] = c_ice
+							if math.random() < ICICHA then --if glaciated, place icicles
+								data[ai] = c_iciu
+							end
+						end
+						
+						if math.random() < STAGCHA then
+							caverealms:stalagmite(x,y,z, area, data)
+						end
+						if math.random() < CRYSTAL then
+							caverealms:crystal_stalagmite(x,y,z, area, data, biome)
+						end
+					end
+					
 				end
-				nixyz2 = nixyz2 + 1 --increment the 3D index
-				nixz2 = nixz2 + 1 --increment the 2D index
-				vi = vi + 1 --increment the area index
+				nixyz2 = nixyz2 + 1
+				nixz = nixz + 1
+				vi = vi + 1
 			end
-			nixz2 = nixz2 - sidelen --reverse the index a bit
+			nixz = nixz - sidelen
 		end
-		nixz2 = nixz2 + sidelen --increment the index
+		
 	end
-
-
-	--write these changes to the world
+	
+	--send data back to voxelmanip
 	vm:set_data(data)
+	--calc lighting
 	vm:set_lighting({day=0, night=0})
 	vm:calc_lighting()
+	--write it to world
 	vm:write_to_map(data)
-	local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long this took
-	print ("[caverealms] "..chugent.." ms") --tell people how long it took
+
+	local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long it took
+	print ("[subterrain] "..chugent.." ms") --tell people how long
 end)
