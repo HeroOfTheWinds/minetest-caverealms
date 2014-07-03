@@ -7,8 +7,32 @@ local H_LAC = caverealms.config.h_lac --20 --...stalactites
 local H_CRY = caverealms.config.h_cry --9 --max height of glow crystals
 local H_CLAC = caverealms.config.h_clac --13 --max height of glow crystal stalactites
 
+function caverealms:above_solid(x,y,z,area,data)
+	local c_air = minetest.get_content_id("air")
+	local ai = area:index(x,y+1,z-3)
+	if data[ai] == c_air then
+		return false
+	else
+		return true
+	end
+end
+function caverealms:below_solid(x,y,z,area,data)
+	local c_air = minetest.get_content_id("air")
+	local ai = area:index(x,y-1,z-3)
+	if data[ai] == c_air then
+		return false
+	else
+		return true
+	end
+end
+
 --stalagmite spawner
 function caverealms:stalagmite(x,y,z, area, data)
+
+	if not caverealms:below_solid(x,y,z,area,data) then
+		return
+	end
+	
 	--contest ids
 	local c_stone = minetest.get_content_id("default:stone")
 
@@ -42,6 +66,11 @@ end
 
 --stalactite spawner
 function caverealms:stalactite(x,y,z, area, data)
+
+	if not caverealms:above_solid(x,y,z,area,data) then
+		return
+	end
+
 	--contest ids
 	local c_stone = minetest.get_content_id("default:stone")--("caverealms:limestone")
 
@@ -75,6 +104,11 @@ end
 
 --glowing crystal stalagmite spawner
 function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
+
+	if not caverealms:below_solid(x,y,z,area,data) then
+		return
+	end
+	
 	--contest ids
 	local c_stone = minetest.get_content_id("default:stone")
 	local c_crystal = minetest.get_content_id("caverealms:glow_crystal")
@@ -162,6 +196,11 @@ end
 
 --crystal stalactite spawner
 function caverealms:crystal_stalactite(x,y,z, area, data, biome)
+
+	if not caverealms:above_solid(x,y,z,area,data) then
+		return
+	end
+
 	--contest ids
 	local c_stone = minetest.get_content_id("default:stone")
 	local c_crystore = minetest.get_content_id("caverealms:glow_ore")
@@ -249,6 +288,11 @@ end
 
 --function to create giant 'shrooms
 function caverealms:giant_shroom(x, y, z, area, data)
+
+	if not caverealms:below_solid(x,y,z,area,data) then
+		return
+	end
+
 	--as usual, grab the content ID's
 	local c_stem = minetest.get_content_id("caverealms:mushroom_stem")
 	local c_cap = minetest.get_content_id("caverealms:mushroom_cap")
