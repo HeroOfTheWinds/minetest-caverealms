@@ -287,5 +287,5 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	vm:write_to_map(data)
 
 	local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long it took
-	print ("[subterrain] "..chugent.." ms") --tell people how long
+	print ("[caverealms] "..chugent.." ms") --tell people how long
 end)
