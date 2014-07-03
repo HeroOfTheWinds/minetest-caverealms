@@ -273,9 +273,9 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				nixz = nixz + 1
 				vi = vi + 1
 			end
-			nixz = nixz - sidelen
+			nixz = nixz - sidelen --shift the 2D index back
 		end
-		
+		nixz = nixz + sidelen --shift the 2D index up a layer
 	end
 	
 	--send data back to voxelmanip
