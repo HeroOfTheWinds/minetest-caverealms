@@ -1,4 +1,4 @@
--- caverealms indev by HeroOfTheWinds
+-- caverealms v.0.3 by HeroOfTheWinds
 -- original cave code modified from paramat's subterrain
 -- For Minetest 0.4.8 stable
 -- Depends default
