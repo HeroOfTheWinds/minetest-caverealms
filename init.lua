@@ -196,8 +196,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					local ai = area:index(x,y+1,z) --above index
 					if data[ai] == c_stone and data[vi] == c_air then --ceiling
 						if math.random() < ICICHA and (biome == 4 or biome == 5) then
-							local bi = area:index(x,y-1,z)
-							data[bi] = c_icid
+							data[vi] = c_icid
 						end
 						if math.random() < WORMCHA then
 							data[vi] = c_worm
