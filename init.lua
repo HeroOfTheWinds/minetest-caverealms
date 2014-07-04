@@ -13,9 +13,13 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 --load companion lua files
 dofile(modpath.."/config.lua") --configuration file; holds various constants
 dofile(modpath.."/crafting.lua") --crafting recipes
-dofile(modpath.."/falling_ice.lua") --complicated function for falling icicles
 dofile(modpath.."/nodes.lua") --node definitions
 dofile(modpath.."/functions.lua") --function definitions
+
+if caverealms.config.falling_icicles == true then
+	dofile(modpath.."/falling_ice.lua") --complicated function for falling icicles
+	print("[caverealms] falling icicles enabled.")
+end
 
 -- Parameters
 
