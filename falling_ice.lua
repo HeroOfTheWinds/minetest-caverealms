@@ -63,7 +63,7 @@ minetest.register_entity("caverealms:falling_ice", {
 			if obj:is_player() then
 				obj:set_hp(obj:get_hp() - 8)
 			end
-		end	
+		end
 		-- Note: walkable is in the node definition, not in item groups
 		if not bcd or
 				(bcd.walkable or
@@ -103,19 +103,19 @@ minetest.register_entity("caverealms:falling_ice", {
 			-- remove entity
 			--minetest.add_node(np, self.node)
 			self.object:remove()
-			nodeupdate(np)
+			caverealms:nodeupdate(np)
 		else
 			-- Do nothing
 		end
 	end
 })
 
-function spawn_falling_node(p, node)
+function caverealms:spawn_falling_node(p, node)
 	obj = minetest.add_entity(p, "caverealms:falling_ice")
 	obj:get_luaentity():set_node(node)
 end
 
-function drop_attached_node(p)
+function caverealms:drop_attached_node(p)
 	local nn = minetest.get_node(p).name
 	minetest.remove_node(p)
 	for _,item in ipairs(minetest.get_node_drops(nn, "")) do
@@ -128,7 +128,7 @@ function drop_attached_node(p)
 	end
 end
 
-function check_attached_node(p, n)
+function caverealms:check_attached_node(p, n)
 	local def = minetest.registered_nodes[n.name]
 	local d = {x=0, y=0, z=0}
 	if def.paramtype2 == "wallmounted" then
@@ -161,7 +161,7 @@ end
 -- Some common functions
 --
 
-function nodeupdate_single(p, delay)
+function caverealms:nodeupdate_single(p, delay)
 	n = minetest.get_node(p)
 	if minetest.get_item_group(n.name, "falling_node") ~= 0 then
 		p_bottom = {x=p.x, y=p.y-1, z=p.z}
@@ -175,25 +175,25 @@ function nodeupdate_single(p, delay)
 				(not minetest.registered_nodes[n_bottom.name].walkable or
 					minetest.registered_nodes[n_bottom.name].buildable_to) then
 			if delay then
-				minetest.after(0.1, nodeupdate_single, {x=p.x, y=p.y, z=p.z}, false)
+				minetest.after(0.1, caverealms.nodeupdate_single, {x=p.x, y=p.y, z=p.z}, false)
 			else
 				n.level = minetest.env:get_node_level(p)
 				minetest.remove_node(p)
-				spawn_falling_node(p, n)
-				nodeupdate(p)
+				caverealms:spawn_falling_node(p, n)
+				caverealms:nodeupdate(p)
 			end
 		end
 	end
 
 	if minetest.get_item_group(n.name, "attached_node") ~= 0 then
 		if not check_attached_node(p, n) then
-			drop_attached_node(p)
-			nodeupdate(p)
+			caverealms:drop_attached_node(p)
+			caverealms:nodeupdate(p)
 		end
 	end
 end
 
-function nodeupdate(p, delay)
+function caverealms:nodeupdate(p, delay)
 	-- Round p to prevent falling entities to get stuck
 	p.x = math.floor(p.x+0.5)
 	p.y = math.floor(p.y+0.5)
@@ -202,7 +202,7 @@ function nodeupdate(p, delay)
 	for x = -1,1 do
 	for y = -1,1 do
 	for z = -1,1 do
-		nodeupdate_single({x=p.x+x, y=p.y+y, z=p.z+z}, delay or not (x==0 and y==0 and z==0))
+		caverealms:nodeupdate_single({x=p.x+x, y=p.y+y, z=p.z+z}, delay or not (x==0 and y==0 and z==0))
 	end
 	end
 	end

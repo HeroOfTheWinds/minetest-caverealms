@@ -13,9 +13,13 @@ local modpath = minetest.get_modpath(minetest.get_current_modname())
 --load companion lua files
 dofile(modpath.."/config.lua") --configuration file; holds various constants
 dofile(modpath.."/crafting.lua") --crafting recipes
-dofile(modpath.."/falling_ice.lua") --complicated function for falling icicles
 dofile(modpath.."/nodes.lua") --node definitions
 dofile(modpath.."/functions.lua") --function definitions
+
+if caverealms.config.falling_icicles == true then
+	dofile(modpath.."/falling_ice.lua") --complicated function for falling icicles
+	print("[caverealms] falling icicles enabled.")
+end
 
 -- Parameters
 
@@ -90,13 +94,13 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local x0 = minp.x
 	local y0 = minp.y
 	local z0 = minp.z
-	
+
 	print ("[caverealms] chunk minp ("..x0.." "..y0.." "..z0..")") --tell people you are generating a chunk
-	
+
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
 	local data = vm:get_data()
-	
+
 	--grab content IDs
 	local c_air = minetest.get_content_id("air")
 	local c_stone = minetest.get_content_id("default:stone")
@@ -118,21 +122,21 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_worm = minetest.get_content_id("caverealms:glow_worm")
 	local c_iciu = minetest.get_content_id("caverealms:icicle_up")
 	local c_icid = minetest.get_content_id("caverealms:icicle_down")
-	
+
 	--mandatory values
 	local sidelen = x1 - x0 + 1 --length of a mapblock
 	local chulens = {x=sidelen, y=sidelen, z=sidelen} --table of chunk edges
 	local minposxyz = {x=x0, y=y0, z=z0} --bottom corner
 	local minposxz = {x=x0, y=z0} --2D bottom corner
-	
+
 	local nvals_cave = minetest.get_perlin_map(np_cave, chulens):get3dMap_flat(minposxyz) --cave noise for structure
 	local nvals_wave = minetest.get_perlin_map(np_wave, chulens):get3dMap_flat(minposxyz) --wavy structure of cavern ceilings and floors
 	local nvals_biome = minetest.get_perlin_map(np_biome, chulens):get2dMap_flat({x=x0+150, y=z0+50}) --2D noise for biomes (will be 3D humidity/temp later)
-	
+
 	local nixyz = 1 --3D node index
 	local nixz = 1 --2D node index
 	local nixyz2 = 1 --second 3D index for second loop
-	
+
 	for z = z0, z1 do -- for each xy plane progressing northwards
 		--structure loop
 		for y = y0, y1 do -- for each x row progressing upwards
@@ -155,7 +159,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				vi = vi + 1
 			end
 		end
-		
+
 		--decoration loop
 		for y = y0, y1 do -- for each x row progressing upwards
 			local tcave --same as above
@@ -168,7 +172,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			end
 			local vi = area:index(x0, y, z)
 			for x = x0, x1 do -- for each node do
-				
+
 				--determine biome
 				local biome = false --preliminary declaration
 				n_biome = nvals_biome[nixz] --make an easier reference to the noise
@@ -186,14 +190,13 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				else
 					biome = 3 --algae
 				end
-				
+
 				if math.floor(((nvals_cave[nixyz2] + nvals_wave[nixyz2])/2)*100) == math.floor(tcave*100) then
 					--ceiling
 					local ai = area:index(x,y+1,z) --above index
 					if data[ai] == c_stone and data[vi] == c_air then --ceiling
 						if math.random() < ICICHA and (biome == 4 or biome == 5) then
-							local bi = area:index(x,y-1,z)
-							data[bi] = c_icid
+							data[vi] = c_icid
 						end
 						if math.random() < WORMCHA then
 							data[vi] = c_worm
@@ -259,7 +262,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 								data[ai] = c_iciu
 							end
 						end
-						
+
 						if math.random() < STAGCHA then
 							caverealms:stalagmite(x,y,z, area, data)
 						end
@@ -267,7 +270,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 							caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 						end
 					end
-					
+
 				end
 				nixyz2 = nixyz2 + 1
 				nixz = nixz + 1
@@ -277,7 +280,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		end
 		nixz = nixz + sidelen --shift the 2D index up a layer
 	end
-	
+
 	--send data back to voxelmanip
 	vm:set_data(data)
 	--calc lighting
@@ -289,3 +292,6 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long it took
 	print ("[caverealms] "..chugent.." ms") --tell people how long
 end)
+
+
+print("[caverealms] loaded!")
