@@ -117,6 +117,8 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 	local c_emore = minetest.get_content_id("caverealms:glow_emerald_ore")
 	local c_mesecry = minetest.get_content_id("caverealms:glow_mese")
 	local c_meseore = minetest.get_content_id("default:stone_with_mese")
+	local c_ruby = minetest.get_content_id("caverealms:glow_ruby")
+	local c_rubore = minetest.get_content_id("caverealms:glow_ruby_ore")
 	local c_ice = minetest.get_content_id("default:ice")
 	local c_thinice = minetest.get_content_id("caverealms:thin_ice")
 
@@ -142,14 +144,16 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
  		{ {c_crystore, c_crystal}, {c_emore, c_emerald} },
  		{ {c_emore, c_emerald}, {c_crystore, c_crystal} },
  		{ {c_emore, c_emerald}, {c_meseore, c_mesecry} },
- 		{ {c_ice, c_thinice}, {c_crystore, c_crystal}}
+ 		{ {c_ice, c_thinice}, {c_crystore, c_crystal}},
+		{ {c_ice, c_thinice}, {c_crystore, c_crystal}},
+		{ {c_rubore, c_ruby}, {c_meseore, c_mesecry}},
  	}
 
  	local nid_a
  	local nid_b
 	local nid_s = c_stone --stone base, will be rewritten to ice in certain biomes
 
- 	if biome > 3 then
+ 	if biome > 3 and biome < 6 then
  		if mode == 1 then
  			nid_a = c_ice
 			nid_b = c_thinice
@@ -209,6 +213,8 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 	local c_emore = minetest.get_content_id("caverealms:glow_emerald_ore")
 	local c_mesecry = minetest.get_content_id("caverealms:glow_mese")
 	local c_meseore = minetest.get_content_id("default:stone_with_mese")
+	local c_ruby = minetest.get_content_id("caverealms:glow_ruby")
+	local c_rubore = minetest.get_content_id("caverealms:glow_ruby_ore")
 	local c_ice = minetest.get_content_id("default:ice")
 	local c_thinice = minetest.get_content_id("caverealms:hanging_thin_ice")
 
@@ -234,14 +240,16 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
  		{ {c_crystore, c_crystal}, {c_emore, c_emerald} },
  		{ {c_emore, c_emerald}, {c_crystore, c_crystal} },
  		{ {c_emore, c_emerald}, {c_meseore, c_mesecry} },
- 		{ {c_ice, c_thinice}, {c_crystore, c_crystal}}
+ 		{ {c_ice, c_thinice}, {c_crystore, c_crystal}},
+		{ {c_ice, c_thinice}, {c_crystore, c_crystal}},
+		{ {c_rubore, c_ruby}, {c_meseore, c_mesecry}},
  	}
 
  	local nid_a
  	local nid_b
 	local nid_s = c_stone --stone base, will be rewritten to ice in certain biomes
 
- 	if biome > 3 then
+ 	if biome > 3 and biome < 6 then
  		if mode == 1 then
  			nid_a = c_ice
 			nid_b = c_thinice

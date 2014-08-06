@@ -48,6 +48,20 @@ minetest.register_node("caverealms:glow_mese", {
 	sunlight_propagates = true,
 })
 
+--glowing ruby
+minetest.register_node("caverealms:glow_ruby", {
+	description = "Glow Ruby",
+	tiles = {"caverealms_glow_ruby.png"},
+	is_ground_content = true,
+	groups = {cracky=3},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 13,
+	paramtype = "light",
+	use_texture_alpha = true,
+	drawtype = "glasslike",
+	sunlight_propagates = true,
+})
+
 --embedded crystal
 minetest.register_node("caverealms:glow_ore", {
 	description = "Glow Crystal Ore",
@@ -63,6 +77,17 @@ minetest.register_node("caverealms:glow_ore", {
 minetest.register_node("caverealms:glow_emerald_ore", {
 	description = "Glow Emerald Ore",
 	tiles = {"caverealms_glow_emerald_ore.png"},
+	is_ground_content = true,
+	groups = {cracky=2},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 10,
+	paramtype = "light",
+})
+
+--embedded rub
+minetest.register_node("caverealms:glow_ruby_ore", {
+	description = "Glow Ruby Ore",
+	tiles = {"caverealms_glow_ruby_ore.png"},
 	is_ground_content = true,
 	groups = {cracky=2},
 	sounds = default.node_sound_glass_defaults(),
@@ -235,6 +260,19 @@ minetest.register_node("caverealms:stone_with_algae", {
 	}),
 })
 
+--Hot Cobble - cobble with lava instead of mortar XD
+minetest.register_node("caverealms:hot_cobble", {
+	description = "Hot Cobble",
+	tiles = {"caverealms_hot_cobble.png"},
+	is_ground_content = true,
+	groups = {crumbly=2, hot=1},
+	damage_per_second = 1,
+	light_source = 3,
+	sounds = default.node_sound_stone_defaults({
+		footstep = {name="default_stone_footstep", gain=0.25},
+	}),
+})
+
 --glow worms
 minetest.register_node("caverealms:glow_worm", {
 	description = "Glow Worms",
@@ -322,4 +360,81 @@ minetest.register_node("caverealms:mushroom_gills", {
 	groups = {oddly_breakable_by_hand=1},
 	drawtype = "plantlike",
 	paramtype = "light",
+})
+
+--define special flame so that it does not expire
+minetest.register_node("caverealms:constant_flame", {
+	description = "Fire",
+	drawtype = "plantlike",
+	tiles = {{
+		name="fire_basic_flame_animated.png",
+		animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1},
+	}},
+	inventory_image = "fire_basic_flame.png",
+	light_source = 14,
+	groups = {igniter=2,dig_immediate=3,hot=3},
+	drop = '',
+	walkable = false,
+	buildable_to = true,
+	damage_per_second = 4,
+	
+	after_place_node = function(pos, placer)
+		fire.on_flame_add_at(pos)
+	end,
+	
+	after_dig_node = function(pos, oldnode, oldmetadata, digger)
+		fire.on_flame_remove_at(pos)
+	end,
+})
+
+--node to create a treasure chest in DM Forts.
+minetest.register_node("caverealms:s_chest", {
+	description = "Trying to rob the bank before it's opened, eh?",
+	tiles = {"default_chest_front.png"},
+	paramtype2 = "facedir",
+	groups = {choppy=3,oddly_breakable_by_hand=2,cavechest=1},
+})
+
+--hacky schematic placers
+
+minetest.register_node("caverealms:s_fountain", {
+	description = "A Hack like you should know what this does...",
+	tiles = {"caverealms_stone_eyes.png"},
+	groups = {crumbly=3, schema=1},
+})
+
+minetest.register_node("caverealms:s_fortress", {
+	description = "A Hack like you should know what this does...",
+	tiles = {"caverealms_stone_eyes.png"},
+	groups = {crumbly=3, schema=1},
+})
+
+--dungeon master statue (nodebox)
+minetest.register_node("caverealms:dm_statue", {
+	tiles = {
+		"caverealms_dm_stone.png",
+		"caverealms_dm_stone.png",
+		"caverealms_dm_stone.png",
+		"caverealms_dm_stone.png",
+		"caverealms_dm_stone.png",
+		"caverealms_stone_eyes.png"
+	},
+	drawtype = "nodebox",
+	paramtype = "light",
+	paramtype2 = "facedir",
+	groups = {cracky=2},
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.4375, -0.5, -0.4375, 0.4375, -0.3125, 0.4375}, -- NodeBox1
+			{-0.25, -0.125, -0.1875, 0.25, 0.5, 0.1875}, -- NodeBox2
+			{-0.375, 0, -0.125, -0.25, 0.4375, 0.125}, -- NodeBox3
+			{0.25, 0.125, -0.4375, 0.375, 0.375, 0.1875}, -- NodeBox4
+			{-0.25, -0.5, -0.125, -0.125, -0.125, 0.125}, -- NodeBox5
+			{0.125, -0.3125, -0.125, 0.25, 0, 0.125}, -- NodeBox6
+		}
+	},
+	selection_box = {
+		type = "regular"
+	}
 })
