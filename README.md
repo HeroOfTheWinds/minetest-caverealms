@@ -12,3 +12,5 @@ HeroOfTheWinds - everything
 Zeno- - additional ideas and fine tuning
 
 Licensed under the WTFPL
+
+Also be sure to check out VanessaE's texturepack "HDX", which supports this mod!
