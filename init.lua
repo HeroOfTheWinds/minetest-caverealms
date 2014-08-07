@@ -22,6 +22,9 @@ if caverealms.config.falling_icicles == true then
 	print("[caverealms] falling icicles enabled.")
 end
 
+local FORTRESSES = caverealms.config.fortresses --true | Should fortresses spawn?
+local FOUNTAINS = caverealms.config.fountains --true | Should fountains spawn?
+
 -- Parameters
 
 local YMIN = caverealms.config.ymin -- Approximate realm limits.
@@ -284,10 +287,10 @@ minetest.register_on_generated(function(minp, maxp, seed)
 							if math.random() < FLACHA then --neverending flames
 								data[ai] = c_flame
 							end
-							if math.random() < FOUNCHA then --DM FOUNTAIN
+							if math.random() < FOUNCHA and FOUNTAINS then --DM FOUNTAIN
 								data[ai] = c_fountain
 							end
-							if math.random() < FORTCHA then --DM FORTRESS
+							if math.random() < FORTCHA and FORTRESSES then --DM FORTRESS
 								data[ai] = c_fortress
 							end
 						end

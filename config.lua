@@ -50,6 +50,9 @@ setting("number", "fortcha", 0.0003) --chance of fortresses
 --realm limits for Dungeon Masters' Lair
 setting("number", "dm_top", -4000) --upper limit 
 setting("number", "dm_bot", -5000) --lower limit 
+--should fortresses and fountains spawn?
+setting("bool", "fortresses", true)
+setting("bool", "fountains", true)
 
 --minimum number of items in chests found in fortresses
 setting("number", "min_items", 2)
