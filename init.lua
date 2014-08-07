@@ -1,4 +1,4 @@
--- caverealms v.0.3 by HeroOfTheWinds
+-- caverealms v.0.4 by HeroOfTheWinds
 -- original cave code modified from paramat's subterrain
 -- For Minetest 0.4.8 stable
 -- Depends default
@@ -38,12 +38,12 @@ local MYCCHA = caverealms.config.myccha --0.03 --chance of mycena mushrooms
 local WORMCHA = caverealms.config.wormcha --0.03 --chance of glow worms
 local GIANTCHA = caverealms.config.giantcha --0.001 -- chance of giant mushrooms
 local ICICHA = caverealms.config.icicha --0.035 -- chance of icicles
-local FLACHA = 0.04 --chance of constant flames
-local FOUNCHA = 0.001 --chance of statue + fountain
-local FORTCHA = 0.0003 --chance of DM Fortresses
+local FLACHA = caverealms.config.flacha --0.04 --chance of constant flames
+local FOUNCHA = caverealms.config.founcha --0.001 --chance of statue + fountain
+local FORTCHA = caverealms.config.fortcha --0.0003 --chance of DM Fortresses
 
-local DM_TOP = -4000 --level at which Dungeon Master Realms start to appear
-local DM_BOT = -5000 --level at which "" ends
+local DM_TOP = caverealms.config.dm_top -- -4000 --level at which Dungeon Master Realms start to appear
+local DM_BOT = caverealms.config.dm_bot -- -5000 --level at which "" ends
 
 -- 3D noise for caves
 

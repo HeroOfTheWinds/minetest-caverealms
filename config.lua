@@ -43,3 +43,15 @@ setting("number", "myccha", 0.03) --chance of mycena mushrooms
 setting("number", "wormcha", 0.02) --chance of glow worms
 setting("number", "giantcha", 0.001) --chance of giant mushrooms
 setting("number", "icicha", 0.035) --chance of icicles
+setting("number", "flacha", 0.04) --chance of constant flames
+setting("number", "founcha", 0.001) --chance of fountains
+setting("number", "fortcha", 0.0003) --chance of fortresses
+
+--realm limits for Dungeon Masters' Lair
+setting("number", "dm_top", -4000) --upper limit 
+setting("number", "dm_bot", -5000) --lower limit 
+
+--minimum number of items in chests found in fortresses
+setting("number", "min_items", 2)
+--maximum number of items in chests found in fortresses
+setting("number", "max_items", 5)

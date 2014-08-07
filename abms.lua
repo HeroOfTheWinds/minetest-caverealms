@@ -23,7 +23,9 @@ minetest.register_abm({
 	end,
 })
 
-local MAX_ITEMS = 5 --maximum number of items to put in chests - do not set to less than 2
+local MIN_ITEMS = caverealms.config.min_items--2 --minimum number of items to put in chests - do not set to greater than MAX_ITEMS
+local MAX_ITEMS = caverealms.config.max_items--5 --maximum number of items to put in chests - do not set to less than MIN_ITEMS
+
 --table of itemstrings
 local ITEMS = {
 	"default:diamond",
@@ -46,7 +48,7 @@ minetest.register_abm({
 		minetest.set_node(pos, {name="default:chest", param2=oldparam})
 		minetest.after(1.0, function()
 			local inv = minetest.get_inventory({type="node", pos=pos})
-			local item_num = math.random(1, MAX_ITEMS)
+			local item_num = math.random(MIN_ITEMS, MAX_ITEMS)
 			for i = 1, item_num do
 				item_i = math.random(8) --if you add or subtract items from ITEMS, be sure to change this value to reflect it
 				inv:add_item("main", ITEMS[item_i])
