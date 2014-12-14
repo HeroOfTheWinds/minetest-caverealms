@@ -25,6 +25,9 @@ setting("number", "ymin", -33000) --bottom realm limit
 setting("number", "ymax", -700) --top realm limit
 setting("number", "tcave", 0.5) --cave threshold
 
+--should player spawn in caves?
+setting("bool", "cavespawn", false)
+
 --falling icicles
 setting("bool", "falling_icicles", true) --enable/disable falling icicles
 setting("number", "fallcha", 0.33) --chance of icicles falling when dug
