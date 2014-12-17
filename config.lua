@@ -56,6 +56,8 @@ setting("number", "dm_bot", -5000) --lower limit
 --should fortresses and fountains spawn?
 setting("bool", "fortresses", true)
 setting("bool", "fountains", true)
+--Deep cave settings
+setting("number", "deep_cave", -7000) -- upper limit
 
 --minimum number of items in chests found in fortresses
 setting("number", "min_items", 2)

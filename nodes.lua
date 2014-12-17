@@ -62,6 +62,20 @@ minetest.register_node("caverealms:glow_ruby", {
 	sunlight_propagates = true,
 })
 
+--glowing amethyst
+minetest.register_node("caverealms:glow_amethyst", {
+	description = "Glow Amethyst",
+	tiles = {"caverealms_glow_amethyst.png"},
+	is_ground_content = true,
+	groups = {cracky=3},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 13,
+	paramtype = "light",
+	use_texture_alpha = true,
+	drawtype = "glasslike",
+	sunlight_propagates = true,
+})
+
 --embedded crystal
 minetest.register_node("caverealms:glow_ore", {
 	description = "Glow Crystal Ore",
@@ -84,10 +98,21 @@ minetest.register_node("caverealms:glow_emerald_ore", {
 	paramtype = "light",
 })
 
---embedded rub
+--embedded ruby
 minetest.register_node("caverealms:glow_ruby_ore", {
 	description = "Glow Ruby Ore",
 	tiles = {"caverealms_glow_ruby_ore.png"},
+	is_ground_content = true,
+	groups = {cracky=2},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 10,
+	paramtype = "light",
+})
+
+--embedded amethyst
+minetest.register_node("caverealms:glow_amethyst_ore", {
+	description = "Glow Amethyst Ore",
+	tiles = {"caverealms_glow_amethyst_ore.png"},
 	is_ground_content = true,
 	groups = {cracky=2},
 	sounds = default.node_sound_glass_defaults(),
@@ -107,6 +132,20 @@ minetest.register_node("caverealms:thin_ice", {
 	sunlight_propagates = true,
 	freezemelt = "default:water_source",
 	paramtype = "light",
+})
+
+--salt crystal
+minetest.register_node("caverealms:salt_crystal", {
+	description = "Salt Crystal",
+	tiles = {"caverealms_salt_crystal.png"},
+	is_ground_content = true,
+	groups = {cracky=3},
+	sounds = default.node_sound_glass_defaults(),
+	light_source = 11,
+	paramtype = "light",
+	use_texture_alpha = true,
+	drawtype = "glasslike",
+	sunlight_propagates = true,
 })
 
 --alternate version for stalactites
@@ -170,6 +209,72 @@ for i in ipairs(glow_gem_size) do
 		groups = {cracky=3, oddly_breakable_by_hand=1},
 		sounds = default.node_sound_glass_defaults(),
 		light_source = 11,
+		paramtype = "light",
+		drawtype = "plantlike",
+		walkable = false,
+		buildable_to = true,
+		visual_scale = vs,
+		selection_box = {
+			type = "fixed",
+			fixed = {-0.5*vs, -0.5*vs, -0.5*vs, 0.5*vs, -5/16*vs, 0.5*vs},
+		}
+	})
+end
+
+--glowing salt gem
+local salt_gem_size = { 1.0, 1.2, 1.4, 1.6, 1.7 }
+
+for i in ipairs(salt_gem_size) do
+	if i == 1 then
+		nodename = "caverealms:salt_gem"
+	else
+		nodename = "caverealms:salt_gem_"..i
+	end
+
+	vs = salt_gem_size[i]
+
+	minetest.register_node(nodename, {
+		description = "Salt Gem",
+		tiles = {"caverealms_salt_gem.png"},
+		inventory_image = "caverealms_salt_gem.png",
+		wield_image = "caverealms_salt_gem.png",
+		is_ground_content = true,
+		groups = {cracky=3, oddly_breakable_by_hand=1},
+		sounds = default.node_sound_glass_defaults(),
+		light_source = 11,
+		paramtype = "light",
+		drawtype = "plantlike",
+		walkable = false,
+		buildable_to = true,
+		visual_scale = vs,
+		selection_box = {
+			type = "fixed",
+			fixed = {-0.5*vs, -0.5*vs, -0.5*vs, 0.5*vs, -5/16*vs, 0.5*vs},
+		}
+	})
+end
+
+--stone spike
+local spike_size = { 1.0, 1.2, 1.4, 1.6, 1.7 }
+
+for i in ipairs(spike_size) do
+	if i == 1 then
+		nodename = "caverealms:spike"
+	else
+		nodename = "caverealms:spike_"..i
+	end
+
+	vs = spike_size[i]
+
+	minetest.register_node(nodename, {
+		description = "Stone Spike",
+		tiles = {"caverealms_spike.png"},
+		inventory_image = "caverealms_spike.png",
+		wield_image = "caverealms_spike.png",
+		is_ground_content = true,
+		groups = {cracky=3, oddly_breakable_by_hand=1},
+		sounds = default.node_sound_stone_defaults(),
+		light_source = 3,
 		paramtype = "light",
 		drawtype = "plantlike",
 		walkable = false,
@@ -260,6 +365,20 @@ minetest.register_node("caverealms:stone_with_algae", {
 	}),
 })
 
+--tiny-salt-crystal-covered cobble - pink-ish
+minetest.register_node("caverealms:stone_with_salt", {
+	description = "Cave Stone with Salt",
+	tiles = {"caverealms_salty2.png"},--{"caverealms_salty2.png^caverealms_salty.png", "caverealms_salty2.png", "caverealms_salty2.png^caverealms_salty_side.png"},
+	light_source = 9,
+	paramtype = "light",
+	use_texture_alpha = true,
+	drawtype = "glasslike",
+	sunlight_propagates = true,
+	is_ground_content = true,
+	groups = {crumbly=3},
+	sounds = default.node_sound_glass_defaults(),
+})
+
 --Hot Cobble - cobble with lava instead of mortar XD
 minetest.register_node("caverealms:hot_cobble", {
 	description = "Hot Cobble",
@@ -271,6 +390,40 @@ minetest.register_node("caverealms:hot_cobble", {
 	sounds = default.node_sound_stone_defaults({
 		footstep = {name="default_stone_footstep", gain=0.25},
 	}),
+})
+
+--Glow Obsidian
+minetest.register_node("caverealms:glow_obsidian", {
+	description = "Glowing Obsidian",
+	tiles = {"caverealms_glow_obsidian.png"},
+	is_ground_content = true,
+	groups = {crumbly=1},
+	light_source = 7,
+	sounds = default.node_sound_stone_defaults({
+		footstep = {name="default_stone_footstep", gain=0.25},
+	}),
+})
+
+--Glow Obsidian 2 - has traces of lava
+minetest.register_node("caverealms:glow_obsidian_2", {
+	description = "Hot Glow Obsidian",
+	tiles = {"caverealms_glow_obsidian2.png"},
+	is_ground_content = true,
+	groups = {crumbly=1, hot=1},
+	damage_per_second = 1,
+	light_source = 9,
+	sounds = default.node_sound_stone_defaults({
+		footstep = {name="default_stone_footstep", gain=0.25},
+	}),
+})
+
+--Coal Dust
+minetest.register_node("caverealms:coal_dust", {
+	description = "Coal Dust",
+	tiles = {"caverealms_coal_dust.png"},
+	is_ground_content = true,
+	groups = {crumbly=3, falling_node=1, sand=1},
+	sounds = default.node_sound_sand_defaults(),
 })
 
 --glow worms

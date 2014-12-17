@@ -41,3 +41,13 @@ minetest.register_craft({
 	type = "shapeless",
 	recipe = {"caverealms:thin_ice"}
 })
+
+--use for coal dust
+minetest.register_craft({
+	output = "default:coalblock",
+	recipe = {
+		{"caverealms:coal_dust","caverealms:coal_dust","caverealms:coal_dust"},
+		{"caverealms:coal_dust","caverealms:coal_dust","caverealms:coal_dust"},
+		{"caverealms:coal_dust","caverealms:coal_dust","caverealms:coal_dust"}
+	}
+})

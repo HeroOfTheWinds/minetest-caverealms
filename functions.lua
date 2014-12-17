@@ -119,6 +119,8 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
 	local c_meseore = minetest.get_content_id("default:stone_with_mese")
 	local c_ruby = minetest.get_content_id("caverealms:glow_ruby")
 	local c_rubore = minetest.get_content_id("caverealms:glow_ruby_ore")
+	local c_ameth = minetest.get_content_id("caverealms:glow_amethyst")
+	local c_amethore = minetest.get_content_id("caverealms:glow_amethyst_ore")
 	local c_ice = minetest.get_content_id("default:ice")
 	local c_thinice = minetest.get_content_id("caverealms:thin_ice")
 
@@ -147,6 +149,9 @@ function caverealms:crystal_stalagmite(x,y,z, area, data, biome)
  		{ {c_ice, c_thinice}, {c_crystore, c_crystal}},
 		{ {c_ice, c_thinice}, {c_crystore, c_crystal}},
 		{ {c_rubore, c_ruby}, {c_meseore, c_mesecry}},
+		{ {c_crystore, c_crystal}, {c_rubore, c_ruby} },
+		{ {c_rubore, c_ruby}, {c_emore, c_emerald}},
+		{ {c_amethore, c_ameth}, {c_meseore, c_mesecry} },
  	}
 
  	local nid_a
@@ -215,6 +220,8 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 	local c_meseore = minetest.get_content_id("default:stone_with_mese")
 	local c_ruby = minetest.get_content_id("caverealms:glow_ruby")
 	local c_rubore = minetest.get_content_id("caverealms:glow_ruby_ore")
+	local c_ameth = minetest.get_content_id("caverealms:glow_amethyst")
+	local c_amethore = minetest.get_content_id("caverealms:glow_amethyst_ore")
 	local c_ice = minetest.get_content_id("default:ice")
 	local c_thinice = minetest.get_content_id("caverealms:hanging_thin_ice")
 
@@ -243,6 +250,9 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
  		{ {c_ice, c_thinice}, {c_crystore, c_crystal}},
 		{ {c_ice, c_thinice}, {c_crystore, c_crystal}},
 		{ {c_rubore, c_ruby}, {c_meseore, c_mesecry}},
+		{ {c_crystore, c_crystal}, {c_rubore, c_ruby} },
+		{ {c_rubore, c_ruby}, {c_emore, c_emerald}},
+		{ {c_amethore, c_ameth}, {c_meseore, c_mesecry} },
  	}
 
  	local nid_a
@@ -289,6 +299,51 @@ function caverealms:crystal_stalactite(x,y,z, area, data, biome)
 					local vi = area:index(x, y+j, z-3)
 					data[vi] = nid_b
 				end
+			end
+		end
+	end
+end
+
+--glowing crystal stalagmite spawner
+function caverealms:salt_stalagmite(x,y,z, area, data, biome)
+
+	if not caverealms:below_solid(x,y,z,area,data) then
+		return
+	end
+	
+	--contest ids
+	local c_stone = minetest.get_content_id("default:stone")
+	local c_salt = minetest.get_content_id("caverealms:salt_crystal")
+	
+	local scale = math.random(2, 4)
+	if scale == 2 then
+		for j = -3, 3 do
+			for k = -3, 3 do
+				local vi = area:index(x+j, y, z+k)
+				data[vi] = c_stone
+				if math.abs(j) ~= 3 and math.abs(k) ~= 3 then
+					local vi = area:index(x+j, y+1, z+k)
+					data[vi] = c_stone
+				end
+			end
+		end
+	else
+		for j = -4, 4 do
+			for k = -4, 4 do
+				local vi = area:index(x+j, y, z+k)
+				data[vi] = c_stone
+				if math.abs(j) ~= 4 and math.abs(k) ~= 4 then
+					local vi = area:index(x+j, y+1, z+k)
+					data[vi] = c_stone
+				end
+			end
+		end
+	end
+	for j = 2, scale + 2 do --y
+		for k = -2, scale - 2 do
+			for l = -2, scale - 2 do
+				local vi = area:index(x+k, y+j, z+l)
+				data[vi] = c_salt -- make cube
 			end
 		end
 	end
@@ -387,6 +442,7 @@ end
 
 -- Experimental and very geometric function to create giant octagonal crystals in a variety of random directions
 -- Uses calculations for points on a sphere, lines in geometric space
+-- CURRENTLY USELESS, NOT LIKELY TO BE IMPLEMENTED SOON
 function caverealms:giant_shroom(x, y, z, area, data)
 	--Grab content id's... diamond is a placeholder
 	local c_crys = minetest.get_content_id("default:diamondblock")

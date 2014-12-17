@@ -1,4 +1,4 @@
--- caverealms v.0.4 by HeroOfTheWinds
+-- caverealms v.0.8 by HeroOfTheWinds
 -- original cave code modified from paramat's subterrain
 -- For Minetest 0.4.8 stable
 -- Depends default
@@ -47,6 +47,7 @@ local FORTCHA = caverealms.config.fortcha --0.0003 --chance of DM Fortresses
 
 local DM_TOP = caverealms.config.dm_top -- -4000 --level at which Dungeon Master Realms start to appear
 local DM_BOT = caverealms.config.dm_bot -- -5000 --level at which "" ends
+local DEEP_CAVE = caverealms.config.deep_cave -- -7000 --level at which deep cave biomes take over
 
 -- 3D noise for caves
 
@@ -124,10 +125,26 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local c_gem3 = minetest.get_content_id("caverealms:glow_gem_3")
 	local c_gem4 = minetest.get_content_id("caverealms:glow_gem_4")
 	local c_gem5 = minetest.get_content_id("caverealms:glow_gem_5")
+	local c_saltgem1 = minetest.get_content_id("caverealms:salt_gem")
+	local c_saltgem2 = minetest.get_content_id("caverealms:salt_gem_2")
+	local c_saltgem3 = minetest.get_content_id("caverealms:salt_gem_3")
+	local c_saltgem4 = minetest.get_content_id("caverealms:salt_gem_4")
+	local c_saltgem5 = minetest.get_content_id("caverealms:salt_gem_5")
+	local c_spike1 = minetest.get_content_id("caverealms:spike")
+	local c_spike2 = minetest.get_content_id("caverealms:spike_2")
+	local c_spike3 = minetest.get_content_id("caverealms:spike_3")
+	local c_spike4 = minetest.get_content_id("caverealms:spike_4")
+	local c_spike5 = minetest.get_content_id("caverealms:spike_5")
 	local c_moss = minetest.get_content_id("caverealms:stone_with_moss")
 	local c_lichen = minetest.get_content_id("caverealms:stone_with_lichen")
 	local c_algae = minetest.get_content_id("caverealms:stone_with_algae")
+	local c_salt = minetest.get_content_id("caverealms:stone_with_salt")
 	local c_hcobble = minetest.get_content_id("caverealms:hot_cobble")
+	local c_gobsidian = minetest.get_content_id("caverealms:glow_obsidian")
+	local c_gobsidian2 = minetest.get_content_id("caverealms:glow_obsidian_2")
+	local c_coalblock = minetest.get_content_id("default:coalblock")
+	local c_desand = minetest.get_content_id("default:desert_sand")
+	local c_coaldust = minetest.get_content_id("caverealms:coal_dust")
 	local c_fungus = minetest.get_content_id("caverealms:fungus")
 	local c_mycena = minetest.get_content_id("caverealms:mycena")
 	local c_worm = minetest.get_content_id("caverealms:glow_worm")
@@ -176,6 +193,12 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		
 		--decoration loop
 		for y = y0, y1 do -- for each x row progressing upwards
+		
+			local is_deep = false
+			if y < DEEP_CAVE then
+				is_deep = true
+			end
+		
 			local tcave --same as above
 			if y < yblmin then
 				tcave = TCAVE + ((yblmin - y) / BLEND) ^ 2
@@ -193,8 +216,14 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				--compare noise values to determine a biome
 				if n_biome >= 0 and n_biome < 0.5 then
 					biome = 1 --moss
+					if is_deep then
+						biome = 7 --salt crystal
+					end
 				elseif n_biome <= -0.5 then
 					biome = 2 --fungal
+					if is_deep then
+						biome = 8 --glow obsidian
+					end
 				elseif n_biome >= 0.5 then
 					if n_biome >= 0.7 then
 						biome = 5 --deep glaciated
@@ -203,6 +232,9 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					end
 				else
 					biome = 3 --algae
+					if is_deep then
+						biome = 9 --coal dust
+					end
 				end
 				
 				if y <= DM_TOP and y >= DM_BOT then
@@ -292,6 +324,58 @@ minetest.register_on_generated(function(minp, maxp, seed)
 							end
 							if math.random() < FORTCHA and FORTRESSES then --DM FORTRESS
 								data[ai] = c_fortress
+							end
+						elseif biome == 7 then
+							local bi = area:index(x,y-1,z)
+							data[vi] = c_salt
+							data[bi] = c_salt
+							if math.random() < GEMCHA then
+								-- gems of random size
+								local gems = { c_saltgem1, c_saltgem2, c_saltgem3, c_saltgem4, c_saltgem5 }
+								local gidx = math.random(1, 12)
+								if gidx > 5 then
+									gidx = 1
+								end
+								data[ai] = gems[gidx]
+							end
+							if math.random() < STAGCHA then
+								caverealms:salt_stalagmite(x,y,z, area, data)
+							end
+						elseif biome == 8 then
+							local bi = area:index(x,y-1,z)
+							if math.random() < 0.5 then
+								data[vi] = c_gobsidian
+								data[bi] = c_gobsidian
+							else
+								data[vi] = c_gobsidian2
+								data[bi] = c_gobsidian2
+							end
+							if math.random() < FLACHA then --neverending flames
+								data[ai] = c_flame
+							end
+						elseif biome == 9 then
+							local bi = area:index(x,y-1,z)
+							if math.random() < 0.05 then
+								data[vi] = c_coalblock
+								data[bi] = c_coalblock
+							elseif math.random() < 0.15 then
+								data[vi] = c_coaldust
+								data[bi] = c_coaldust
+							else
+								data[vi] = c_desand
+								data[bi] = c_desand
+							end
+							if math.random() < FLACHA * 0.75 then --neverending flames
+								data[ai] = c_flame
+							end
+							if math.random() < GEMCHA then
+								-- spikes of random size
+								local spikes = { c_spike1, c_spike2, c_spike3, c_spike4, c_spike5 }
+								local sidx = math.random(1, 12)
+								if sidx > 5 then
+									sidx = 1
+								end
+								data[ai] = spikes[sidx]
 							end
 						end
 						
