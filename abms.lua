@@ -2,12 +2,18 @@
 local fortress = minetest.get_modpath("caverealms").."/schems/DMFort.mts"
 local fountain = minetest.get_modpath("caverealms").."/schems/DMFountain.mts"
 
+local DM_TOP = caverealms.config.dm_top -- -4000 --level at which Dungeon Master Realms start to appear
+
 --place Dungeon Master Statue fountains
 minetest.register_abm({
 	nodenames = {"caverealms:s_fountain"},
 	interval = 1.0,
 	chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
+		if pos.y > DM_TOP then
+			minetest.remove_node(pos)
+			return
+		end
 		minetest.place_schematic(pos, fountain, "random", {}, true)
 	end,
 })
@@ -18,6 +24,10 @@ minetest.register_abm({
 	interval = 1.0,
 	chance = 1,
 	action = function(pos, node, active_object_count, active_object_count_wider)
+		if pos.y > DM_TOP then
+			minetest.remove_node(pos)
+			return
+		end
 		npos = {x=pos.x,y=pos.y-7,z=pos.z}
 		minetest.place_schematic(npos, fortress, "random", {}, true)
 	end,
