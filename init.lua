@@ -115,6 +115,12 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	--grab content IDs
 	local c_air = minetest.get_content_id("air")
 	local c_stone = minetest.get_content_id("default:stone")
+	
+	if (minetest.get_modpath("moontest")) then
+		c_air = minetest.get_content_id("moontest:vacuum")
+		c_stone = minetest.get_content_id("moontest:stone")
+	end
+	
 	local c_water = minetest.get_content_id("default:water_source")
 	local c_lava = minetest.get_content_id("default:lava_source")
 	local c_ice = minetest.get_content_id("default:ice")

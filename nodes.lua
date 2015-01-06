@@ -525,7 +525,7 @@ minetest.register_node("caverealms:constant_flame", {
 	}},
 	inventory_image = "fire_basic_flame.png",
 	light_source = 14,
-	groups = {igniter=2,dig_immediate=3,hot=3},
+	groups = {igniter=2,dig_immediate=3,hot=3, not_in_creative_inventory=1},
 	drop = '',
 	walkable = false,
 	buildable_to = true,
@@ -545,7 +545,7 @@ minetest.register_node("caverealms:s_chest", {
 	description = "Trying to rob the bank before it's opened, eh?",
 	tiles = {"default_chest_front.png"},
 	paramtype2 = "facedir",
-	groups = {choppy=3,oddly_breakable_by_hand=2,cavechest=1},
+	groups = {choppy=3,oddly_breakable_by_hand=2,cavechest=1, not_in_creative_inventory=1},
 })
 
 --hacky schematic placers
@@ -553,13 +553,13 @@ minetest.register_node("caverealms:s_chest", {
 minetest.register_node("caverealms:s_fountain", {
 	description = "A Hack like you should know what this does...",
 	tiles = {"caverealms_stone_eyes.png"},
-	groups = {crumbly=3, schema=1},
+	groups = {crumbly=3, schema=1, not_in_creative_inventory=1},
 })
 
 minetest.register_node("caverealms:s_fortress", {
 	description = "A Hack like you should know what this does...",
 	tiles = {"caverealms_stone_eyes.png"},
-	groups = {crumbly=3, schema=1},
+	groups = {crumbly=3, schema=1, not_in_creative_inventory=1},
 })
 
 --dungeon master statue (nodebox)
