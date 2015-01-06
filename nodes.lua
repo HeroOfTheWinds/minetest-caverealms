@@ -4,6 +4,7 @@
 
 local FALLING_ICICLES = caverealms.config.falling_icicles --true --toggle to turn on or off falling icicles in glaciated biome
 local FALLCHA = caverealms.config.fallcha --0.33 --chance of causing the structure to fall
+local DM_TOP = caverealms.config.dm_top -- -4000 --level at which Dungeon Master Realms start to appear
 
 
 --glowing crystal
@@ -537,6 +538,9 @@ minetest.register_node("caverealms:constant_flame", {
 	
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
 		fire.on_flame_remove_at(pos)
+		if pos.y > DM_TOP then
+			minetest.remove_node(pos)
+		end
 	end,
 })
 
@@ -546,6 +550,11 @@ minetest.register_node("caverealms:s_chest", {
 	tiles = {"default_chest_front.png"},
 	paramtype2 = "facedir",
 	groups = {choppy=3,oddly_breakable_by_hand=2,cavechest=1, not_in_creative_inventory=1},
+	after_dig_node = function(pos, oldnode, oldmetadata, digger)
+		if pos.y > DM_TOP then
+			minetest.remove_node(pos)
+		end
+	end,
 })
 
 --hacky schematic placers
@@ -554,12 +563,22 @@ minetest.register_node("caverealms:s_fountain", {
 	description = "A Hack like you should know what this does...",
 	tiles = {"caverealms_stone_eyes.png"},
 	groups = {crumbly=3, schema=1, not_in_creative_inventory=1},
+	after_dig_node = function(pos, oldnode, oldmetadata, digger)
+		if pos.y > DM_TOP then
+			minetest.remove_node(pos)
+		end
+	end,
 })
 
 minetest.register_node("caverealms:s_fortress", {
 	description = "A Hack like you should know what this does...",
 	tiles = {"caverealms_stone_eyes.png"},
 	groups = {crumbly=3, schema=1, not_in_creative_inventory=1},
+	after_dig_node = function(pos, oldnode, oldmetadata, digger)
+		if pos.y > DM_TOP then
+			minetest.remove_node(pos)
+		end
+	end,
 })
 
 --dungeon master statue (nodebox)
