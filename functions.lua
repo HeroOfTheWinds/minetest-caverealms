@@ -9,8 +9,16 @@ local H_CLAC = caverealms.config.h_clac --13 --max height of glow crystal stalac
 
 function caverealms:above_solid(x,y,z,area,data)
 	local c_air = minetest.get_content_id("air")
+	
+	local c_vac
+	if (minetest.get_modpath("moontest")) then
+		c_vac = minetest.get_content_id("moontest:vacuum")
+	else
+		c_vac = minetest.get_content_id("air")
+	end
+	
 	local ai = area:index(x,y+1,z-3)
-	if data[ai] == c_air then
+	if data[ai] == c_air or data[ai] == c_vac then
 		return false
 	else
 		return true
@@ -18,8 +26,16 @@ function caverealms:above_solid(x,y,z,area,data)
 end
 function caverealms:below_solid(x,y,z,area,data)
 	local c_air = minetest.get_content_id("air")
+	
+	local c_vac
+	if (minetest.get_modpath("moontest")) then
+		c_vac = minetest.get_content_id("moontest:vacuum")
+	else
+		c_vac = minetest.get_content_id("air")
+	end
+	
 	local ai = area:index(x,y-1,z-3)
-	if data[ai] == c_air then
+	if data[ai] == c_air or data[ai] == c_vac then
 		return false
 	else
 		return true
@@ -443,7 +459,7 @@ end
 -- Experimental and very geometric function to create giant octagonal crystals in a variety of random directions
 -- Uses calculations for points on a sphere, lines in geometric space
 -- CURRENTLY USELESS, NOT LIKELY TO BE IMPLEMENTED SOON
-function caverealms:giant_shroom(x, y, z, area, data)
+function caverealms:octagon(x, y, z, area, data)
 	--Grab content id's... diamond is a placeholder
 	local c_crys = minetest.get_content_id("default:diamondblock")
 	
