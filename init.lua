@@ -219,7 +219,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				
 				--determine biome
 				local biome = false --preliminary declaration
-				n_biome = nvals_biome[nixz] --make an easier reference to the noise
+				local n_biome = nvals_biome[nixz] --make an easier reference to the noise
 				--compare noise values to determine a biome
 				if n_biome >= 0 and n_biome < 0.5 then
 					biome = 1 --moss
