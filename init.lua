@@ -10,6 +10,9 @@ caverealms = {} --create a container for functions and constants
 --grab a shorthand for the filepath of the mod
 local modpath = minetest.get_modpath(minetest.get_current_modname())
 
+-- Translation support
+local S = minetest.get_translator("caverealms")
+
 --load companion lua files
 dofile(modpath.."/config.lua") --configuration file; holds various constants
 dofile(modpath.."/crafting.lua") --crafting recipes
@@ -19,7 +22,7 @@ dofile(modpath.."/abms.lua") --abm definitions
 
 if caverealms.config.falling_icicles == true then
 	dofile(modpath.."/falling_ice.lua") --complicated function for falling icicles
-	print("[caverealms] falling icicles enabled.")
+	print(S("[caverealms] falling icicles enabled."))
 end
 
 local FORTRESSES = caverealms.config.fortresses --true | Should fortresses spawn?
@@ -106,7 +109,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	local y0 = minp.y
 	local z0 = minp.z
 	
-	print ("[caverealms] chunk minp ("..x0.." "..y0.." "..z0..")") --tell people you are generating a chunk
+	print (S("[caverealms] chunk minp (@1 @2 @3)", x0, y0, z0)) --tell people you are generating a chunk
 	
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
@@ -413,6 +416,6 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	vm:write_to_map(data)
 
 	local chugent = math.ceil((os.clock() - t1) * 1000) --grab how long it took
-	print ("[caverealms] "..chugent.." ms") --tell people how long
+	print (S("[caverealms] @1 ms", chugent)) --tell people how long
 end)
-print("[caverealms] loaded!")
+print(S("[caverealms] loaded!"))
