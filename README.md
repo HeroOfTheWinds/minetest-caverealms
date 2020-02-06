@@ -10,7 +10,7 @@ For more information, view the official forum topic at:
 - HeroOfTheWinds - everything
 - Zeno - additional ideas and fine tuning
 
-##Licensing
+## Licensing
 - WTFPL
 
 Also be sure to check out VanessaE's texturepack "HDX", which supports this mod!
